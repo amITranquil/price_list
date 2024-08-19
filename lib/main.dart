@@ -3,8 +3,27 @@ import 'package:html/dom.dart' hide Text;
 import 'package:html/parser.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:window_manager/window_manager.dart';
 
-void main() {
+void main() async {
+
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Window manager'ı başlat
+  await windowManager.ensureInitialized();
+
+  WindowOptions windowOptions = const WindowOptions(
+    size: Size(800, 600),
+    center: true,
+    backgroundColor: Colors.transparent,
+    titleBarStyle: TitleBarStyle.normal,
+  );
+
+   windowManager.waitUntilReadyToShow(windowOptions, () async {
+    await windowManager.maximize();
+    await windowManager.show();
+    await windowManager.focus();
+  });
   runApp(const MyApp());
 }
 
@@ -213,7 +232,7 @@ class PriceCalculatorScreenState extends State<PriceCalculatorScreen> {
                 _calculateFinalPrice(usdExchangeRate);
               },
               child: const Text('USD ile Hesapla'),
-            ),
+            ), const SizedBox(height: 7),
             ElevatedButton(
               onPressed: () {
                 final double eurExchangeRate =
@@ -238,7 +257,8 @@ class PriceCalculatorScreenState extends State<PriceCalculatorScreen> {
                     ? 'Alış Fiyatını Gizle'
                     : 'Alış Fiyatını Göster',
               ),
-            ),
+            ), const SizedBox(height: 7),
+            ElevatedButton(onPressed: _fetchRates, child: const Text('Kurları Güncelle')),
             const SizedBox(height: 20),
             if (_isPriceBoughtVisible && _priceBought.isNotEmpty)
               Text(
