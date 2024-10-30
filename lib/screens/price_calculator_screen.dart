@@ -18,6 +18,8 @@ class PriceCalculatorScreenState extends State<PriceCalculatorScreen> {
   final TextEditingController _priceController = TextEditingController();
   final TextEditingController _discountController1 = TextEditingController();
   final TextEditingController _discountController2 = TextEditingController();
+  final TextEditingController _discountController3 = TextEditingController();
+
   final TextEditingController _profitMarginController = TextEditingController();
   final TextEditingController _usdExchangeRateController =
       TextEditingController();
@@ -25,10 +27,10 @@ class PriceCalculatorScreenState extends State<PriceCalculatorScreen> {
       TextEditingController();
   final TextEditingController _pinController = TextEditingController();
 
-  String _finalPrice = '';
+  //String _finalPrice = '';
   String _priceBought = '';
   String _kdvPrice = '';
-  String _priceBoughtTaxless = '';
+  String _priceWithProfit = '';
   String _priceBoughtTax = '';
   String _usdRate = 'Yükleniyor...';
   String _eurRate = 'Yükleniyor...';
@@ -42,6 +44,7 @@ class PriceCalculatorScreenState extends State<PriceCalculatorScreen> {
 
     _discountController1.text = '45';
     _discountController2.text = '0';
+    _discountController3.text = '0';
     _profitMarginController.text = '30';
   }
 
@@ -132,29 +135,28 @@ class PriceCalculatorScreenState extends State<PriceCalculatorScreen> {
     final double originalPrice = double.parse(_priceController.text);
     final double discount1 = double.parse(_discountController1.text) / 100;
     final double discount2 = double.parse(_discountController2.text) / 100;
+    final double discount3 = double.parse(_discountController3.text) / 100;
     final double profitMargin =
         double.parse(_profitMarginController.text) / 100;
 
     final double discountedPrice1 = originalPrice * (1 - discount1);
     final double discountedPrice2 = discountedPrice1 * (1 - discount2);
-    final double priceBought = discountedPrice2 * exchangeRate;
+    final double discountedPrice3 = discountedPrice2 * (1 - discount3);
+    final double priceBought = discountedPrice3 * exchangeRate;
 
-    final double priceBoughtTaxless = priceBought * 1.1;
     final double priceBoughtTax = priceBought * 1.2;
 
-    final double priceWithProfit = priceBoughtTaxless * (1 + profitMargin);
-    final double finalPrice = priceWithProfit;
-    final double kdvPrice = priceBoughtTax + ((priceBoughtTax * 30) / 100);
+    final double priceWithProfit = priceBought * (1 + profitMargin);
+
+    final double kdvPrice = priceWithProfit * 1.2;
 
     setState(() {
       _priceBought = NumberFormat.currency(locale: 'tr_TR', symbol: '₺')
           .format(priceBought);
-      _priceBoughtTaxless = NumberFormat.currency(locale: 'tr_TR', symbol: '₺')
-          .format(priceBoughtTaxless);
       _priceBoughtTax = NumberFormat.currency(locale: 'tr_TR', symbol: '₺')
           .format(priceBoughtTax);
-      _finalPrice = NumberFormat.currency(locale: 'tr_TR', symbol: '₺')
-          .format(finalPrice);
+      _priceWithProfit = NumberFormat.currency(locale: 'tr_TR', symbol: '₺')
+          .format(priceWithProfit);
       _kdvPrice =
           NumberFormat.currency(locale: 'tr_TR', symbol: '₺').format(kdvPrice);
     });
@@ -164,7 +166,7 @@ class PriceCalculatorScreenState extends State<PriceCalculatorScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('KRESMAK LİSTEDEN FİYAT HESAPLA'),
+        title: const Text('DÖVİZ LİSTESİNDEN FİYAT HESAPLA'),
         titleSpacing: 10,
         titleTextStyle: const TextStyle(fontSize: 20),
         actions: [
@@ -200,6 +202,13 @@ class PriceCalculatorScreenState extends State<PriceCalculatorScreen> {
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(
                   labelText: 'İndirim2 (%)',
+                ),
+              ),
+              TextField(
+                controller: _discountController3,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: 'İndirim3 (%)',
                 ),
               ),
               TextField(
@@ -274,15 +283,15 @@ class PriceCalculatorScreenState extends State<PriceCalculatorScreen> {
               if (_isPriceBoughtVisible && _priceBought.isNotEmpty)
                 Center(
                   child: Text(
-                    'Alış Fiyatı: $_priceBought \nAlış %10: $_priceBoughtTaxless \nAlış KDV: $_priceBoughtTax',
+                    'Alış Fiyatı: $_priceBought \nAlış KDV: $_priceBoughtTax',
                     style: const TextStyle(
                         fontSize: 24, fontWeight: FontWeight.bold),
                   ),
                 ),
-              if (_finalPrice.isNotEmpty)
+              if (_priceWithProfit.isNotEmpty)
                 Center(
                   child: Text(
-                    'Son Fiyat: $_finalPrice',
+                    'Satış Fiyat: $_priceWithProfit',
                     style: const TextStyle(
                         fontSize: 24, fontWeight: FontWeight.bold),
                   ),
