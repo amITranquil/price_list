@@ -27,13 +27,14 @@ class PriceCalculatorScreenState extends State<PriceCalculatorScreen> {
       TextEditingController();
   final TextEditingController _pinController = TextEditingController();
 
-  //String _finalPrice = '';
+  String _priceConvert = '';
   String _priceBought = '';
   String _kdvPrice = '';
   String _priceWithProfit = '';
   String _priceBoughtTax = '';
   String _usdRate = 'Yükleniyor...';
   String _eurRate = 'Yükleniyor...';
+  String _usedExchangeRate = '';
 
   bool _isPriceBoughtVisible = false;
 
@@ -45,7 +46,7 @@ class PriceCalculatorScreenState extends State<PriceCalculatorScreen> {
     _discountController1.text = '45';
     _discountController2.text = '0';
     _discountController3.text = '0';
-    _profitMarginController.text = '30';
+    _profitMarginController.text = '40';
   }
 
   Future<void> _fetchRates() async {
@@ -131,13 +132,20 @@ class PriceCalculatorScreenState extends State<PriceCalculatorScreen> {
     );
   }
 
-  void _calculateFinalPrice(double exchangeRate) {
-    final double originalPrice = double.parse(_priceController.text);
-    final double discount1 = double.parse(_discountController1.text) / 100;
-    final double discount2 = double.parse(_discountController2.text) / 100;
-    final double discount3 = double.parse(_discountController3.text) / 100;
+  void _calculateFinalPrice(double exchangeRate, String currency) {
+    final double originalPrice =
+        double.parse(_priceController.text.replaceAll(',', '.'));
+
+    final double priceConvert = originalPrice * exchangeRate;
+
+    final double discount1 =
+        double.parse(_discountController1.text.replaceAll(',', '.')) / 100;
+    final double discount2 =
+        double.parse(_discountController2.text.replaceAll(',', '.')) / 100;
+    final double discount3 =
+        double.parse(_discountController3.text.replaceAll(',', '.')) / 100;
     final double profitMargin =
-        double.parse(_profitMarginController.text) / 100;
+        double.parse(_profitMarginController.text.replaceAll(',', '.')) / 100;
 
     final double discountedPrice1 = originalPrice * (1 - discount1);
     final double discountedPrice2 = discountedPrice1 * (1 - discount2);
@@ -151,6 +159,8 @@ class PriceCalculatorScreenState extends State<PriceCalculatorScreen> {
     final double kdvPrice = priceWithProfit * 1.2;
 
     setState(() {
+      _priceConvert = NumberFormat.currency(locale: 'tr_TR', symbol: '₺')
+          .format(priceConvert);
       _priceBought = NumberFormat.currency(locale: 'tr_TR', symbol: '₺')
           .format(priceBought);
       _priceBoughtTax = NumberFormat.currency(locale: 'tr_TR', symbol: '₺')
@@ -159,6 +169,8 @@ class PriceCalculatorScreenState extends State<PriceCalculatorScreen> {
           .format(priceWithProfit);
       _kdvPrice =
           NumberFormat.currency(locale: 'tr_TR', symbol: '₺').format(kdvPrice);
+
+      _usedExchangeRate = currency;
     });
   }
 
@@ -238,7 +250,7 @@ class PriceCalculatorScreenState extends State<PriceCalculatorScreen> {
                   onPressed: () {
                     final double usdExchangeRate =
                         double.parse(_usdExchangeRateController.text);
-                    _calculateFinalPrice(usdExchangeRate);
+                    _calculateFinalPrice(usdExchangeRate, 'USD \$');
                   },
                   child: const Text('USD ile Hesapla'),
                 ),
@@ -249,7 +261,7 @@ class PriceCalculatorScreenState extends State<PriceCalculatorScreen> {
                   onPressed: () {
                     final double eurExchangeRate =
                         double.parse(_eurExchangeRateController.text);
-                    _calculateFinalPrice(eurExchangeRate);
+                    _calculateFinalPrice(eurExchangeRate, 'EUR €');
                   },
                   child: const Text('EUR ile Hesapla'),
                 ),
@@ -280,12 +292,23 @@ class PriceCalculatorScreenState extends State<PriceCalculatorScreen> {
                     child: const Text('Kurları Güncelle')),
               ),
               const SizedBox(height: 20),
+              if (_priceController.text.isNotEmpty)
+                Center(
+                  child: Text(
+                    ' $_usedExchangeRate --> $_priceConvert ',
+                    style: const TextStyle(
+                        fontSize: 24, fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              const SizedBox(height: 20),
               if (_isPriceBoughtVisible && _priceBought.isNotEmpty)
                 Center(
                   child: Text(
                     'Alış Fiyatı: $_priceBought \nAlış KDV: $_priceBoughtTax',
                     style: const TextStyle(
                         fontSize: 24, fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
                   ),
                 ),
               if (_priceWithProfit.isNotEmpty)
