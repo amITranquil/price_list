@@ -44,7 +44,7 @@ class PriceCalculatorScreenState extends State<PriceCalculatorScreen> {
     _fetchRates();
 
     _discountController1.text = '45';
-    _discountController2.text = '0';
+    _discountController2.text = '10';
     _discountController3.text = '0';
     _profitMarginController.text = '40';
   }
