@@ -12,7 +12,7 @@ void main() async {
   // Veritabanını başlat
   await DatabaseHelper().initDatabase();
 
-  if (kIsWeb || Platform.isAndroid) {
+  if (kIsWeb || Platform.isAndroid || Platform.isIOS || Platform.isMacOS) {
     runApp(const MyApp());
   } else if (Platform.isWindows) {
     await windowManager.ensureInitialized();
