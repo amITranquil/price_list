@@ -133,6 +133,11 @@ class PriceCalculatorScreenState extends State<PriceCalculatorScreen> {
   }
 
   void _calculateFinalPrice(double exchangeRate, String currency) {
+    if (_priceController.text.isEmpty) {
+      _showError('Orijinal fiyat boş bırakılamaz!');
+      return;
+    }
+
     final double originalPrice =
         double.parse(_priceController.text.replaceAll(',', '.'));
 
@@ -174,13 +179,19 @@ class PriceCalculatorScreenState extends State<PriceCalculatorScreen> {
     });
   }
 
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('DÖVİZ LİSTESİNDEN FİYAT HESAPLA'),
         titleSpacing: 10,
-        titleTextStyle: const TextStyle(fontSize: 20),
+        titleTextStyle: const TextStyle(fontSize: 15),
         actions: [
           IconButton(
             icon: const Icon(Icons.edit),
@@ -197,49 +208,56 @@ class PriceCalculatorScreenState extends State<PriceCalculatorScreen> {
             children: [
               TextField(
                 controller: _priceController,
-                keyboardType: TextInputType.number,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
                 decoration: const InputDecoration(
                   labelText: 'Orijinal Fiyat (USD veya EUR)',
                 ),
               ),
               TextField(
                 controller: _discountController1,
-                keyboardType: TextInputType.number,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
                 decoration: const InputDecoration(
                   labelText: 'İndirim1 (%)',
                 ),
               ),
               TextField(
                 controller: _discountController2,
-                keyboardType: TextInputType.number,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
                 decoration: const InputDecoration(
                   labelText: 'İndirim2 (%)',
                 ),
               ),
               TextField(
                 controller: _discountController3,
-                keyboardType: TextInputType.number,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
                 decoration: const InputDecoration(
                   labelText: 'İndirim3 (%)',
                 ),
               ),
               TextField(
                 controller: _profitMarginController,
-                keyboardType: TextInputType.number,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
                 decoration: const InputDecoration(
                   labelText: 'Kar Marjı (%)',
                 ),
               ),
               TextField(
                 controller: _usdExchangeRateController,
-                keyboardType: TextInputType.number,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
                 decoration: const InputDecoration(
                   labelText: 'USD Döviz Kuru (Banka Satış Fiyatı)',
                 ),
               ),
               TextField(
                 controller: _eurExchangeRateController,
-                keyboardType: TextInputType.number,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
                 decoration: const InputDecoration(
                   labelText: 'EUR Döviz Kuru (Banka Satış Fiyatı)',
                 ),
@@ -248,9 +266,14 @@ class PriceCalculatorScreenState extends State<PriceCalculatorScreen> {
               Center(
                 child: ElevatedButton(
                   onPressed: () {
+                    if (_usdExchangeRateController.text.isEmpty) {
+                      _showError('USD Döviz Kuru boş bırakılamaz!');
+                      return;
+                    }
                     final double usdExchangeRate =
                         double.parse(_usdExchangeRateController.text);
                     _calculateFinalPrice(usdExchangeRate, 'USD \$');
+                    FocusScope.of(context).unfocus();
                   },
                   child: const Text('USD ile Hesapla'),
                 ),
@@ -259,9 +282,14 @@ class PriceCalculatorScreenState extends State<PriceCalculatorScreen> {
               Center(
                 child: ElevatedButton(
                   onPressed: () {
+                    if (_eurExchangeRateController.text.isEmpty) {
+                      _showError('EUR Döviz Kuru boş bırakılamaz!');
+                      return;
+                    }
                     final double eurExchangeRate =
                         double.parse(_eurExchangeRateController.text);
                     _calculateFinalPrice(eurExchangeRate, 'EUR €');
+                    FocusScope.of(context).unfocus();
                   },
                   child: const Text('EUR ile Hesapla'),
                 ),
@@ -270,6 +298,7 @@ class PriceCalculatorScreenState extends State<PriceCalculatorScreen> {
               TextField(
                 controller: _pinController,
                 obscureText: true,
+                keyboardType: TextInputType.number,
                 decoration: const InputDecoration(
                   labelText: 'PIN Kodu',
                 ),

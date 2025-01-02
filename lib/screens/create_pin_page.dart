@@ -47,6 +47,7 @@ class CreatePinPageState extends State<CreatePinPage> {
             TextField(
               controller: _pinController,
               obscureText: true,
+              keyboardType: TextInputType.number,
               decoration: const InputDecoration(
                 labelText: 'Yeni PIN Kodu',
               ),
@@ -54,6 +55,7 @@ class CreatePinPageState extends State<CreatePinPage> {
             TextField(
               controller: _confirmPinController,
               obscureText: true,
+              keyboardType: TextInputType.number,
               decoration: const InputDecoration(
                 labelText: 'PIN Kodunu Onayla',
               ),

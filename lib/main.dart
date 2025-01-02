@@ -12,9 +12,9 @@ void main() async {
   // Veritabanını başlat
   await DatabaseHelper().initDatabase();
 
-  if (kIsWeb || Platform.isAndroid || Platform.isIOS || Platform.isMacOS) {
+  if (kIsWeb || Platform.isAndroid || Platform.isIOS) {
     runApp(const MyApp());
-  } else if (Platform.isWindows) {
+  } else if (Platform.isWindows || Platform.isMacOS) {
     await windowManager.ensureInitialized();
 
     WindowOptions windowOptions = const WindowOptions(

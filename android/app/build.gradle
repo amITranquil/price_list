@@ -52,6 +52,16 @@ android {
             crunchPngs false
         }
     }
+
+    flavorDimensions "default"
+
+    productFlavors {
+        free {
+            dimension "default"
+            resValue "string", "price_list", "free flavor example"
+            applicationIdSuffix ".free"
+        }
+    }
 }
 
 flutter {
