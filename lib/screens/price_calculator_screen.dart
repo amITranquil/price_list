@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:html/dom.dart' hide Text;
 import 'package:html/parser.dart';
 import '/utils/database_helper.dart';
+import '/models/discount_preset.dart';
 import 'create_pin_page.dart';
 import 'update_pin_page.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
