@@ -3,7 +3,9 @@ import '/utils/database_helper.dart';
 import 'price_calculator_screen.dart'; // PriceCalculatorScreen import edin
 
 class CreatePinPage extends StatefulWidget {
-  const CreatePinPage({super.key});
+  final Function(Locale)? onLanguageChange;
+  
+  const CreatePinPage({super.key, this.onLanguageChange});
 
   @override
   CreatePinPageState createState() => CreatePinPageState();
@@ -24,7 +26,7 @@ class CreatePinPageState extends State<CreatePinPage> {
       // PIN kodu başarıyla oluşturulduktan sonra PriceCalculatorScreen'e geç
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const PriceCalculatorScreen()),
+        MaterialPageRoute(builder: (context) => PriceCalculatorScreen(onLanguageChange: widget.onLanguageChange)),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
