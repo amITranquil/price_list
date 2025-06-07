@@ -43,11 +43,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
   Win32Window::Size size(1280, 720);
   
 
-  /*if (!window.Create(L"Döviz Listesinden Fiyat Hesaplayıcı", origin, size)) {
-    return EXIT_FAILURE;
-  }
-  window.SetQuitOnClose(true);*/
-
 
 // Başlık olmadan pencere oluşturulur.
   if (!window.Create(L"", origin, size)) {
@@ -56,7 +51,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
   
   // Pencere başlığını doğrudan Win32 API ile ayarla.
   //setlocale(LC_ALL,"Turkish");
-  string title ="Döviz Listesinden Fiyat Hesaplayıcı";
+  string title ="Listeden Fiyat Hesaplama";
   SetWindowTextW(window.GetHandle(),  StringToWString(title).c_str());
 
   window.SetQuitOnClose(true);
