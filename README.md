@@ -79,14 +79,35 @@ Döviz kurlarına dayalı fiyat hesaplama uygulaması. USD, EUR ve TL para birim
 
 ## 🚀 Kurulum
 
-### Gereksinimler
+### 📦 Hazır Uygulama İndirme
+
+#### 🤖 Android
+1. [Releases sayfasından](https://github.com/amITranquil/price_list/releases) `price_list_android_v2.0.0.apk` dosyasını indirin
+2. Telefon ayarlarında "Bilinmeyen kaynaklar" seçeneğini etkinleştirin
+3. APK dosyasını çalıştırıp kurun
+
+#### 🍎 macOS
+1. [Releases sayfasından](https://github.com/amITranquil/price_list/releases) `price_list_macos_v2.0.0.zip` dosyasını indirin
+2. ZIP dosyasını çıkarın
+3. `Price List.app` dosyasını Applications klasörüne sürükleyin
+4. İlk açılışta "Güvenlik ve Gizlilik" ayarlarından izin verin
+
+#### 🪟 Windows
+1. [Releases sayfasından](https://github.com/amITranquil/price_list/releases) `price_list_windows_v2.0.0.zip` dosyasını indirin
+2. ZIP dosyasını istediğiniz klasöre çıkarın
+3. `price_list.exe` dosyasını çalıştırın
+4. İlk açılışta Windows Defender uyarısı çıkarsa "Yine de çalıştır" seçeneğini tıklayın
+
+### 🛠️ Geliştirici Kurulumu
+
+#### Gereksinimler
 
 - **Flutter SDK**: 3.2.5 veya üzeri
 - **Dart SDK**: 3.2.5 veya üzeri
 - **Android Studio** / **VS Code**
 - **Git**
 
-### Adımlar
+#### Adımlar
 
 1. **Projeyi klonlayın**
 ```bash
@@ -329,6 +350,8 @@ Bu proje özel kullanım içindir. Ticari kullanım yasaktır.
 - ✅ Dinamik para birimi simgeleri
 - ✅ Geliştirilmiş kullanıcı arayüzü
 - ✅ Çoklu dil desteği iyileştirildi
+- ✅ Windows desktop platform desteği
+- ✅ Tüm platformlar için unified release
 
 ### v1.0.2
 - ✅ macOS ikon sorunları giderildi

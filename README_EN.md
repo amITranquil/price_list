@@ -79,14 +79,35 @@ A currency-based price calculation application. Calculate original prices in USD
 
 ## 🚀 Installation
 
-### Requirements
+### 📦 Ready Application Download
+
+#### 🤖 Android
+1. Download `price_list_android_v2.0.0.apk` from [Releases page](https://github.com/amITranquil/price_list/releases)
+2. Enable "Unknown sources" option in phone settings
+3. Run and install the APK file
+
+#### 🍎 macOS
+1. Download `price_list_macos_v2.0.0.zip` from [Releases page](https://github.com/amITranquil/price_list/releases)
+2. Extract the ZIP file
+3. Drag `Price List.app` file to Applications folder
+4. Grant permission from "Security & Privacy" settings on first launch
+
+#### 🪟 Windows
+1. Download `price_list_windows_v2.0.0.zip` from [Releases page](https://github.com/amITranquil/price_list/releases)
+2. Extract the ZIP file to your desired folder
+3. Run `price_list.exe` file
+4. If Windows Defender warning appears on first launch, click "Run anyway"
+
+### 🛠️ Developer Installation
+
+#### Requirements
 
 - **Flutter SDK**: 3.2.5 or higher
 - **Dart SDK**: 3.2.5 or higher
 - **Android Studio** / **VS Code**
 - **Git**
 
-### Steps
+#### Steps
 
 1. **Clone the project**
 ```bash
@@ -329,6 +350,8 @@ This project is for private use. Commercial use is prohibited.
 - ✅ Dynamic currency symbols
 - ✅ Improved user interface
 - ✅ Enhanced multi-language support
+- ✅ Windows desktop platform support
+- ✅ Unified release for all platforms
 
 ### v1.0.2
 - ✅ macOS icon issues fixed
