@@ -57,25 +57,25 @@ A currency-based price calculation application. Calculate original prices in USD
 ## 📱 Screenshots
 
 ### Main Screen
-```
-┌─────────────────────────────────────┐
-│ 💱 Exchange Rates                   │
-│ USD: 34.25 ₺  EUR: 37.18 ₺         │
-│                                     │
-│ 🏷️ Product Pricing                  │
-│ Original Price: [_____] $           │
-│ Currency: [USD] [EUR] [TL]          │
-│                                     │
-│ ⚙️ Discounts and Profit Settings    │
-│ Discount 1: 45%  Discount 2: 10%    │
-│ Discount 3: 0%   Profit Margin: 40% │
-│                                     │
-│ 📊 Calculation Results              │
-│ Converted Price: 3,425.00 ₺        │
-│ Sale Price: 1,918.20 ₺             │
-│ VAT Included: 2,301.84 ₺           │
-└─────────────────────────────────────┘
-```
+
+#### 💱 Exchange Rates
+- **USD:** 34.25 ₺
+- **EUR:** 37.18 ₺
+
+#### 🏷️ Product Pricing
+- **Original Price:** [Input Field] $
+- **Currency:** USD | EUR | TL
+
+#### ⚙️ Discounts and Profit Settings
+- **Discount 1:** 45%
+- **Discount 2:** 10%
+- **Discount 3:** 0%
+- **Profit Margin:** 40%
+
+#### 📊 Calculation Results
+- **Converted Price:** 3,425.00 ₺
+- **Sale Price:** 1,918.20 ₺
+- **VAT Included:** 2,301.84 ₺
 
 ## 🚀 Installation
 

@@ -57,25 +57,25 @@ Döviz kurlarına dayalı fiyat hesaplama uygulaması. USD, EUR ve TL para birim
 ## 📱 Ekran Görüntüleri
 
 ### Ana Ekran
-```
-┌─────────────────────────────────────┐
-│ 💱 Döviz Kurları                    │
-│ USD: 34.25 ₺  EUR: 37.18 ₺         │
-│                                     │
-│ 🏷️ Ürün Fiyatlandırma              │
-│ Orijinal Fiyat: [_____] $           │
-│ Para Birimi: [USD] [EUR] [TL]       │
-│                                     │
-│ ⚙️ İskonto ve Kar Ayarları          │
-│ İskonto 1: 45%  İskonto 2: 10%      │
-│ İskonto 3: 0%   Kar Marjı: 40%      │
-│                                     │
-│ 📊 Hesaplama Sonuçları              │
-│ Çevrilmiş Fiyat: 3,425.00 ₺        │
-│ Satış Fiyatı: 1,918.20 ₺           │
-│ KDV Dahil: 2,301.84 ₺              │
-└─────────────────────────────────────┘
-```
+
+#### 💱 Döviz Kurları
+- **USD:** 34.25 ₺
+- **EUR:** 37.18 ₺
+
+#### 🏷️ Ürün Fiyatlandırma
+- **Orijinal Fiyat:** [Giriş Alanı] $
+- **Para Birimi:** USD | EUR | TL
+
+#### ⚙️ İskonto ve Kar Ayarları
+- **İskonto 1:** 45%
+- **İskonto 2:** 10%
+- **İskonto 3:** 0%
+- **Kar Marjı:** 40%
+
+#### 📊 Hesaplama Sonuçları
+- **Çevrilmiş Fiyat:** 3,425.00 ₺
+- **Satış Fiyatı:** 1,918.20 ₺
+- **KDV Dahil:** 2,301.84 ₺
 
 ## 🚀 Kurulum
 
