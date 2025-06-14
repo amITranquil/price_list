@@ -1,45 +1,47 @@
 @echo off
+setlocal enabledelayedexpansion
+
 echo ========================================
 echo    Price List Windows Build Script
 echo ========================================
 echo.
 
-REM Proje hazırlığı
+REM [1/5] Proje temizleniyor
 echo [1/5] Proje temizleniyor...
-flutter clean
-if %errorlevel% neq 0 (
+call flutter clean
+if errorlevel 1 (
     echo HATA: Flutter clean başarısız! Devam ediliyor...
-    echo.
 ) else (
     echo ✓ Proje temizleme başarılı
-    echo.
 )
+echo.
 
+REM [2/5] Bağımlılıklar yükleniyor
 echo [2/5] Bağımlılıklar yükleniyor...
-flutter pub get
-if %errorlevel% neq 0 (
+call flutter pub get
+if errorlevel 1 (
     echo UYARI: Flutter pub get başarısız! Devam ediliyor...
     echo Eğer build başarısız olursa bu adımı tekrar deneyin.
-    echo.
 ) else (
     echo ✓ Bağımlılıklar başarıyla yüklendi
-    echo.
 )
+echo.
 
+REM [3/5] Windows desktop desteği
 echo [3/5] Windows desktop desteği etkinleştiriliyor...
-flutter config --enable-windows-desktop
-if %errorlevel% neq 0 (
+call flutter config --enable-windows-desktop
+if errorlevel 1 (
     echo UYARI: Windows desktop yapılandırması başarısız! Devam ediliyor...
-    echo.
 ) else (
     echo ✓ Windows desktop desteği etkinleştirildi
-    echo.
 )
+echo.
 
+REM [4/5] Build
 echo [4/5] Windows release build'i oluşturuluyor...
 echo Bu işlem birkaç dakika sürebilir...
-flutter build windows --release
-if %errorlevel% neq 0 (
+call flutter build windows --release
+if errorlevel 1 (
     echo.
     echo ========================================
     echo          BUILD BAŞARISIZ!
@@ -55,14 +57,14 @@ if %errorlevel% neq 0 (
     echo 2. Visual Studio Community'yi C++ tools ile yükleyin
     echo 3. flutter pub get komutunu manuel çalıştırın
     echo.
-    echo Script devam etmeyecek çünkü build başarısız.
     pause
     exit /b 1
 ) else (
     echo ✓ Windows build başarıyla tamamlandı
-    echo.
 )
+echo.
 
+REM [5/5] Zip arşivi
 echo [5/5] Zip arşivi oluşturuluyor...
 if not exist "build\windows\x64\runner\Release" (
     echo HATA: Build klasörü bulunamadı!
@@ -72,17 +74,16 @@ if not exist "build\windows\x64\runner\Release" (
 )
 
 powershell -Command "Compress-Archive -Path 'build\windows\x64\runner\Release\*' -DestinationPath 'price_list_windows_v2.1.0.zip' -Force"
-if %errorlevel% neq 0 (
+if errorlevel 1 (
     echo HATA: Zip oluşturma başarısız!
     echo PowerShell hatası veya dosya erişim sorunu olabilir.
     pause
     exit /b 1
 ) else (
     echo ✓ Zip arşivi başarıyla oluşturuldu
-    echo.
 )
-
 echo.
+
 echo ========================================
 echo        BUILD BAŞARIYLA TAMAMLANDI!
 echo ========================================
