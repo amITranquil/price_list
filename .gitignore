@@ -43,3 +43,13 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Build artifacts - should not be committed to repo
+*.apk
+*.zip
+*.ipa
+*.exe
+*.dmg
+*.deb
+*.rpm
+*.msi
