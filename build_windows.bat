@@ -18,10 +18,9 @@ if %errorlevel% neq 0 (
 echo [2/5] Bağımlılıklar yükleniyor...
 flutter pub get
 if %errorlevel% neq 0 (
-    echo HATA: Flutter pub get başarısız!
-    echo Bu adım başarısız olursa build devam edemez!
-    pause
-    exit /b 1
+    echo UYARI: Flutter pub get başarısız! Devam ediliyor...
+    echo Eğer build başarısız olursa bu adımı tekrar deneyin.
+    echo.
 ) else (
     echo ✓ Bağımlılıklar başarıyla yüklendi
     echo.
@@ -41,11 +40,22 @@ echo [4/5] Windows release build'i oluşturuluyor...
 echo Bu işlem birkaç dakika sürebilir...
 flutter build windows --release
 if %errorlevel% neq 0 (
-    echo HATA: Windows build başarısız!
+    echo.
+    echo ========================================
+    echo          BUILD BAŞARISIZ!
+    echo ========================================
+    echo.
     echo Muhtemel nedenler:
     echo - Visual Studio C++ tools yüklü değil
     echo - Windows development environment eksik
-    echo flutter doctor komutunu çalıştırın
+    echo - Bağımlılıklar yüklenemedi
+    echo.
+    echo Önerilen çözümler:
+    echo 1. flutter doctor komutunu çalıştırın
+    echo 2. Visual Studio Community'yi C++ tools ile yükleyin
+    echo 3. flutter pub get komutunu manuel çalıştırın
+    echo.
+    echo Script devam etmeyecek çünkü build başarısız.
     pause
     exit /b 1
 ) else (
