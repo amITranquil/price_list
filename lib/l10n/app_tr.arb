@@ -48,5 +48,8 @@
   "presetDeleted": "Preset silindi!",
   "errorSavingPreset": "Preset kaydetme hatası: Geçersiz sayılar",
   "errorCalculation": "Hesaplama hatası: Lütfen girişlerinizi kontrol edin",
-  "dataUnavailable": "Veri mevcut değil"
+  "dataUnavailable": "Veri mevcut değil",
+  "dataSource": "Veri Kaynağı:",
+  "phpOld": "PHP (Eski)",
+  "directNew": "Direkt (Yeni)"
 }

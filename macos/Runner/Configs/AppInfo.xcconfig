@@ -12,3 +12,5 @@ PRODUCT_BUNDLE_IDENTIFIER = com.urlateknik.priceList
 
 // The copyright displayed in application information
 PRODUCT_COPYRIGHT = Copyright © 2024 com.urla_teknik. All rights reserved.
+
+// CocoaPods configuration is included in Debug.xcconfig, Release.xcconfig, and Profile.xcconfig

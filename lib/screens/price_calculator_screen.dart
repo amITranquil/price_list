@@ -49,6 +49,7 @@ class PriceCalculatorScreenState extends State<PriceCalculatorScreen> {
   bool _isLoadingRates = false;
   bool _isCalculating = false;
   bool _showAdvancedOptions = false;
+  bool _useDirectScraping = true;
 
   @override
   void initState() {
@@ -77,6 +78,88 @@ class PriceCalculatorScreenState extends State<PriceCalculatorScreen> {
       _isLoadingRates = true;
     });
 
+    if (_useDirectScraping) {
+      await _fetchRatesDirectly();
+    } else {
+      await _fetchRatesFromPHP();
+    }
+  }
+
+  Future<void> _fetchRatesDirectly() async {
+    const url = 'https://www.isbank.com.tr/doviz-kurlari';
+
+    try {
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+          'Accept-Language': 'tr-TR,tr;q=0.8,en-US;q=0.5,en;q=0.3',
+          'Accept-Encoding': 'gzip, deflate, br',
+          'Connection': 'keep-alive',
+          'Upgrade-Insecure-Requests': '1',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        Document document = parse(response.body);
+
+        String usdRate = '';
+        String eurRate = '';
+
+        // İş Bankası'nın USD satış kuru için XPath: //tr[@id="ctl00_ctl18_g_1e38731d_affa_44fc_85c6_ae10fda79f73_ctl00_FxRatesRepeater_ctl00_fxItem"]/td[3]
+        var usdRow = document.querySelector('tr[id*="FxRatesRepeater_ctl00_fxItem"]');
+        if (usdRow != null) {
+          var usdCell = usdRow.querySelectorAll('td');
+          if (usdCell.length > 2) {
+            usdRate = usdCell[2].text.trim();
+          }
+        }
+
+        // İş Bankası'nın EUR satış kuru için XPath: //tr[@id="ctl00_ctl18_g_1e38731d_affa_44fc_85c6_ae10fda79f73_ctl00_FxRatesRepeater_ctl01_fxItem"]/td[3]
+        var eurRow = document.querySelector('tr[id*="FxRatesRepeater_ctl01_fxItem"]');
+        if (eurRow != null) {
+          var eurCell = eurRow.querySelectorAll('td');
+          if (eurCell.length > 2) {
+            eurRate = eurCell[2].text.trim();
+          }
+        }
+
+        // Alternatif yöntem: Tüm döviz satırlarını tara
+        if (usdRate.isEmpty || eurRate.isEmpty) {
+          var rows = document.querySelectorAll('tr[id*="FxRatesRepeater"]');
+          for (var row in rows) {
+            var cells = row.querySelectorAll('td');
+            if (cells.length > 2) {
+              var currencyCode = cells[0].text.trim();
+              var sellRate = cells[2].text.trim();
+              
+              if (currencyCode.contains('USD') && usdRate.isEmpty) {
+                usdRate = sellRate;
+              } else if (currencyCode.contains('EUR') && eurRate.isEmpty) {
+                eurRate = sellRate;
+              }
+            }
+          }
+        }
+
+        setState(() {
+          final l10n = AppLocalizations.of(context)!;
+          _usdRate = usdRate.isNotEmpty ? usdRate : l10n.dataUnavailable;
+          _eurRate = eurRate.isNotEmpty ? eurRate : l10n.dataUnavailable;
+          _usdExchangeRateController.text = _usdRate.replaceAll(',', '.');
+          _eurExchangeRateController.text = _eurRate.replaceAll(',', '.');
+          _isLoadingRates = false;
+        });
+      } else {
+        _handleRatesFetchError();
+      }
+    } catch (e) {
+      _handleRatesFetchError();
+    }
+  }
+
+  Future<void> _fetchRatesFromPHP() async {
     const url = 'https://urlateknik.com/kresmak/isbank.php';
 
     try {
@@ -117,21 +200,20 @@ class PriceCalculatorScreenState extends State<PriceCalculatorScreen> {
           _isLoadingRates = false;
         });
       } else {
-        setState(() {
-          final l10n = AppLocalizations.of(context)!;
-          _usdRate = l10n.dataUnavailable;
-          _eurRate = l10n.dataUnavailable;
-          _isLoadingRates = false;
-        });
+        _handleRatesFetchError();
       }
     } catch (e) {
-      setState(() {
-        final l10n = AppLocalizations.of(context)!;
-        _usdRate = l10n.dataUnavailable;
-        _eurRate = l10n.dataUnavailable;
-        _isLoadingRates = false;
-      });
+      _handleRatesFetchError();
     }
+  }
+
+  void _handleRatesFetchError() {
+    setState(() {
+      final l10n = AppLocalizations.of(context)!;
+      _usdRate = l10n.dataUnavailable;
+      _eurRate = l10n.dataUnavailable;
+      _isLoadingRates = false;
+    });
   }
 
   Future<void> _togglePriceBoughtVisibility() async {
@@ -401,6 +483,41 @@ class PriceCalculatorScreenState extends State<PriceCalculatorScreen> {
                     onPressed: _fetchRates,
                     tooltip: l10n.refreshRates,
                   ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                const Icon(Icons.source, size: 16),
+                const SizedBox(width: 8),
+                Text(
+                  l10n.dataSource,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: SegmentedButton<bool>(
+                    segments: [
+                      ButtonSegment(
+                        value: false,
+                        label: Text(l10n.phpOld),
+                        icon: const Icon(Icons.code, size: 16),
+                      ),
+                      ButtonSegment(
+                        value: true,
+                        label: Text(l10n.directNew),
+                        icon: const Icon(Icons.web, size: 16),
+                      ),
+                    ],
+                    selected: {_useDirectScraping},
+                    onSelectionChanged: (selection) {
+                      setState(() {
+                        _useDirectScraping = selection.first;
+                      });
+                      _fetchRates();
+                    },
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 16),

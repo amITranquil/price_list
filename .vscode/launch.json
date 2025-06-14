@@ -6,26 +6,33 @@
     "configurations": [
         
         {
-            "name": "price_list",
+            "name": "price_list (debug)",
             "request": "launch",
             "type": "dart",
+            "program": "lib/main.dart"
+        },
+        {
+            "name": "price_list (free flavor)",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart",
             "args": [
                 "--flavor",
-                "free",
-                "--target",
-                "lib/main.dart"
+                "free"
             ]
         },
         {
             "name": "price_list (profile mode)",
             "request": "launch",
             "type": "dart",
+            "program": "lib/main.dart",
             "flutterMode": "profile"
         },
         {
             "name": "price_list (release mode)",
             "request": "launch",
             "type": "dart",
+            "program": "lib/main.dart",
             "flutterMode": "release"
         }
     ]

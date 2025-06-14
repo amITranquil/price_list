@@ -48,5 +48,8 @@
   "presetDeleted": "Preset deleted!",
   "errorSavingPreset": "Error saving preset: Invalid numbers",
   "errorCalculation": "Error in calculation: Please check your inputs",
-  "dataUnavailable": "Data unavailable"
+  "dataUnavailable": "Data unavailable",
+  "dataSource": "Data Source:",
+  "phpOld": "PHP (Old)",
+  "directNew": "Direct (New)"
 }
