@@ -113,9 +113,7 @@ class PriceCalculatorProvider extends ChangeNotifier {
     _exchangeRateState.setLoading();
 
     try {
-      final rates = await _exchangeRateService.fetchRates(
-        useDirectScraping: useDirectScraping,
-      );
+      final rates = await _exchangeRateService.fetchRates();
       _exchangeRateState.setSuccess(rates);
     } catch (e, stackTrace) {
       _exchangeRateState.setError('Failed to fetch exchange rates');

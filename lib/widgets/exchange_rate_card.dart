@@ -60,27 +60,7 @@ class ExchangeRateCard extends StatelessWidget {
                 ),
               )
             else
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildRateColumn(
-                      context,
-                      l10n.usdRate,
-                      exchangeRates?.usdRate,
-                      numberFormat,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: _buildRateColumn(
-                      context,
-                      l10n.eurRate,
-                      exchangeRates?.eurRate,
-                      numberFormat,
-                    ),
-                  ),
-                ],
-              ),
+              _buildCompactRateDisplay(context, exchangeRates, numberFormat),
             const SizedBox(height: 12),
             if (exchangeRates != null)
               Column(
@@ -107,41 +87,45 @@ class ExchangeRateCard extends StatelessWidget {
     );
   }
 
-  Widget _buildRateColumn(
-    BuildContext context,
-    String title,
-    double? rate,
-    NumberFormat numberFormat,
-  ) {
-    final l10n = AppLocalizations.of(context)!;
-    
+  Widget _buildCompactRateDisplay(BuildContext context, ExchangeRates? exchangeRates, NumberFormat numberFormat) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          _buildCompactRateItem(context, 'USD', exchangeRates?.usdRate, numberFormat),
+          const SizedBox(width: 16),
+          _buildCompactRateItem(context, 'EUR', exchangeRates?.eurRate, numberFormat),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCompactRateItem(BuildContext context, String currency, double? rate, NumberFormat numberFormat) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          title,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+          currency,
+          style: Theme.of(context).textTheme.labelMedium?.copyWith(
             fontWeight: FontWeight.w600,
           ),
         ),
-        const SizedBox(height: 8),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Text(
-            rate != null ? numberFormat.format(rate) : l10n.dataUnavailable,
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: rate != null 
-                  ? Theme.of(context).colorScheme.primary
-                  : Theme.of(context).colorScheme.outline,
-            ),
+        const SizedBox(height: 4),
+        Text(
+          rate != null ? numberFormat.format(rate) : '--',
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+            color: rate != null 
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).colorScheme.outline,
           ),
         ),
       ],
     );
   }
+
 }

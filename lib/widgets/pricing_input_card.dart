@@ -9,6 +9,9 @@ class PricingInputCard extends StatelessWidget {
   final DiscountPreset? selectedPreset;
   final ValueChanged<String> onCurrencyChanged;
   final ValueChanged<DiscountPreset?> onPresetChanged;
+  final TextEditingController? usdRateController;
+  final TextEditingController? eurRateController;
+  final TextEditingController? tlRateController;
 
   const PricingInputCard({
     super.key,
@@ -18,6 +21,9 @@ class PricingInputCard extends StatelessWidget {
     required this.selectedPreset,
     required this.onCurrencyChanged,
     required this.onPresetChanged,
+    this.usdRateController,
+    this.eurRateController,
+    this.tlRateController,
   });
 
   @override
@@ -45,6 +51,7 @@ class PricingInputCard extends StatelessWidget {
               decoration: InputDecoration(
                 labelText: l10n.originalPrice,
                 hintText: l10n.enterPriceHelp,
+                prefixText: _getCurrencySymbol(selectedCurrency),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -75,6 +82,10 @@ class PricingInputCard extends StatelessWidget {
                         value: 'EUR',
                         label: Text('EUR'),
                       ),
+                      ButtonSegment<String>(
+                        value: 'TRY',
+                        label: Text('TL'),
+                      ),
                     ],
                     selected: {selectedCurrency},
                     onSelectionChanged: (Set<String> selection) {
@@ -85,6 +96,72 @@ class PricingInputCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 16),
+            
+            // Manuel kur girişi
+            if (usdRateController != null && eurRateController != null && tlRateController != null) ...[
+              Text(
+                l10n.manualExchangeRates,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: usdRateController,
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      decoration: InputDecoration(
+                        labelText: l10n.usdRateManual,
+                        hintText: '0.00',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        filled: true,
+                        fillColor: Theme.of(context).colorScheme.surface,
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: TextField(
+                      controller: eurRateController,
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      decoration: InputDecoration(
+                        labelText: l10n.eurRateManual,
+                        hintText: '0.00',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        filled: true,
+                        fillColor: Theme.of(context).colorScheme.surface,
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: TextField(
+                      controller: tlRateController,
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      decoration: InputDecoration(
+                        labelText: l10n.tryRateManual,
+                        hintText: '1.00',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        filled: true,
+                        fillColor: Theme.of(context).colorScheme.surface,
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+            ],
             
             // Preset seçimi
             Column(
@@ -125,5 +202,18 @@ class PricingInputCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _getCurrencySymbol(String currency) {
+    switch (currency) {
+      case 'USD':
+        return '\$ ';
+      case 'EUR':
+        return '€ ';
+      case 'TRY':
+        return '₺ ';
+      default:
+        return '';
+    }
   }
 }

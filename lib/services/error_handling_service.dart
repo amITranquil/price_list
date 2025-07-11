@@ -114,15 +114,15 @@ class StandardErrorHandlingService implements ErrorHandlingService {
       case ErrorType.validation:
         return error.message;
       case ErrorType.storage:
-        return 'Storage error occurred';
+        return l10n.storageErrorOccurred;
       case ErrorType.authentication:
         return l10n.incorrectPin;
       case ErrorType.calculation:
         return l10n.errorCalculation;
       case ErrorType.fileOperation:
-        return 'File operation failed';
+        return l10n.fileOperationFailed;
       case ErrorType.unknown:
-        return 'An unexpected error occurred';
+        return l10n.unexpectedError;
     }
   }
 
@@ -139,19 +139,19 @@ class StandardErrorHandlingService implements ErrorHandlingService {
   String _getErrorTitle(AppLocalizations l10n, ErrorType type) {
     switch (type) {
       case ErrorType.network:
-        return 'Network Error';
+        return l10n.networkError;
       case ErrorType.validation:
-        return 'Validation Error';
+        return l10n.validationError;
       case ErrorType.storage:
-        return 'Storage Error';
+        return l10n.storageError;
       case ErrorType.authentication:
-        return 'Authentication Error';
+        return l10n.authenticationError;
       case ErrorType.calculation:
-        return 'Calculation Error';
+        return l10n.calculationError;
       case ErrorType.fileOperation:
-        return 'File Error';
+        return l10n.fileError;
       case ErrorType.unknown:
-        return 'Error';
+        return l10n.error;
     }
   }
 
@@ -173,6 +173,34 @@ class StandardErrorHandlingService implements ErrorHandlingService {
         return l10n.errorCalculation;
       case 'dataUnavailable':
         return l10n.dataUnavailable;
+      case 'invalidPriceFormat':
+        return l10n.invalidPriceFormat;
+      case 'priceGreaterThanZero':
+        return l10n.priceGreaterThanZero;
+      case 'priceTooLarge':
+        return l10n.priceTooLarge;
+      case 'invalidPercentageFormat':
+        return l10n.invalidPercentageFormat;
+      case 'percentageCannotBeNegative':
+        return l10n.percentageCannotBeNegative;
+      case 'percentageCannotBeGreaterThan100':
+        return l10n.percentageCannotBeGreaterThan100;
+      case 'presetLabelTooShort':
+        return l10n.presetLabelTooShort;
+      case 'presetLabelTooLong':
+        return l10n.presetLabelTooLong;
+      case 'productNameTooShort':
+        return l10n.productNameTooShort;
+      case 'productNameTooLong':
+        return l10n.productNameTooLong;
+      case 'pinCodeEmpty':
+        return l10n.pinCodeEmpty;
+      case 'pinCodeTooShort':
+        return l10n.pinCodeTooShort;
+      case 'pinCodeTooLong':
+        return l10n.pinCodeTooLong;
+      case 'pinCodeOnlyNumbers':
+        return l10n.pinCodeOnlyNumbers;
       default:
         throw ArgumentError('Unknown localization key: $key');
     }

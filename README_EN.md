@@ -1,6 +1,6 @@
 # Price List Calculator
 
-![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)
+![Version](https://img.shields.io/badge/version-2.5.0-blue.svg)
 ![Flutter](https://img.shields.io/badge/Flutter-%2302569B.svg?style=flat&logo=Flutter&logoColor=white)
 ![Dart](https://img.shields.io/badge/dart-%230175C2.svg?style=flat&logo=dart&logoColor=white)
 
@@ -42,11 +42,20 @@ A currency-based price calculation application. Calculate original prices in USD
 - **Save Settings**: Save frequently used discount combinations
 - **Quick Apply**: Apply saved settings with one click
 - **Preset Management**: Edit and delete saved settings
+- **Preset Editing**: Ability to modify existing presets
+
+### 📈 Calculation Records
+- **Automatic Recording**: Automatically save all calculations
+- **Detailed View**: Simple and detailed calculation display
+- **Price Updates**: Refresh prices with current rates
+- **Original Price Editing**: Modify prices of saved calculations
+- **Search and Filter**: Search through calculation records
 
 ### 🌍 Multi-language Support
 - **Turkish** and **English** interface
 - **Dynamic Translation**: Change language within the app
 - **Localization**: Date and currency formats
+- **Full Localization**: All UI elements and error messages
 
 ### 📱 Platform Support
 - **Android**: Full feature support
@@ -82,18 +91,18 @@ A currency-based price calculation application. Calculate original prices in USD
 ### 📦 Ready Application Download
 
 #### 🤖 Android
-1. Download `price_list_android_v2.0.0.apk` from [Releases page](https://github.com/amITranquil/price_list/releases)
+1. Download `price_list_android_v2.5.0.apk` from [Releases page](https://github.com/amITranquil/price_list/releases)
 2. Enable "Unknown sources" option in phone settings
 3. Run and install the APK file
 
 #### 🍎 macOS
-1. Download `price_list_macos_v2.0.0.zip` from [Releases page](https://github.com/amITranquil/price_list/releases)
+1. Download `price_list_macos_v2.5.0.zip` from [Releases page](https://github.com/amITranquil/price_list/releases)
 2. Extract the ZIP file
 3. Drag `Price List.app` file to Applications folder
 4. Grant permission from "Security & Privacy" settings on first launch
 
 #### 🪟 Windows
-1. Download `price_list_windows_v2.0.0.zip` from [Releases page](https://github.com/amITranquil/price_list/releases)
+1. Download `price_list_windows_v2.5.0.zip` from [Releases page](https://github.com/amITranquil/price_list/releases)
 2. Extract the ZIP file to your desired folder
 3. Run `price_list.exe` file
 4. If Windows Defender warning appears on first launch, click "Run anyway"
@@ -345,7 +354,19 @@ This project is for private use. Commercial use is prohibited.
 
 ## 🔄 Version History
 
-### v2.0.0 (Current)
+### v2.5.0 (Current)
+- ✅ **Calculation Records**: Automatically save all calculations
+- ✅ **Detailed View**: Simple and detailed calculation display
+- ✅ **Price Updates**: Refresh prices with current rates
+- ✅ **Original Price Editing**: Modify prices of saved calculations
+- ✅ **Preset Editing**: Ability to modify existing presets
+- ✅ **Full Localization**: All UI elements and error messages
+- ✅ **Responsive Dialog**: Enhanced and user-friendly dialog design
+- ✅ **Search and Filter**: Search through calculation records
+- ✅ **Clean Architecture**: SOLID principles compliance
+- ✅ **Dependency Injection**: Clean dependency management with GetIt
+
+### v2.0.0
 - ✅ TL currency support added
 - ✅ Dynamic currency symbols
 - ✅ Improved user interface

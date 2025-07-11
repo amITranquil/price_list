@@ -2,12 +2,9 @@ import 'package:flutter/material.dart';
 import '../models/calculation_record.dart';
 import '../utils/database_helper.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:http/http.dart' as http;
 import 'package:html/parser.dart';
-import 'dart:convert';
-import 'dart:io';
-import 'package:file_picker/file_picker.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class CalculationRecordsScreen extends StatefulWidget {
   const CalculationRecordsScreen({super.key});
@@ -111,6 +108,9 @@ class _CalculationRecordsScreenState extends State<CalculationRecordsScreen> {
               Navigator.pop(context);
               _deleteRecord(record.id);
             },
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.error,
+            ),
             child: Text(l10n.delete),
           ),
         ],
@@ -120,92 +120,43 @@ class _CalculationRecordsScreenState extends State<CalculationRecordsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final dateFormat = DateFormat('dd/MM/yyyy HH:mm');
     final numberFormat = NumberFormat('#,##0.00', 'tr_TR');
-    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.calculationRecordsTitle),
         elevation: 0,
-        actions: [
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert),
-            onSelected: (value) {
-              switch (value) {
-                case 'export':
-                  _exportRecords();
-                  break;
-                case 'import':
-                  _importRecords();
-                  break;
-              }
-            },
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                value: 'export',
-                child: Row(
-                  children: [
-                    const Icon(Icons.file_download),
-                    const SizedBox(width: 8),
-                    Text(l10n.exportRecords),
-                  ],
-                ),
-              ),
-              PopupMenuItem(
-                value: 'import',
-                child: Row(
-                  children: [
-                    const Icon(Icons.file_upload),
-                    const SizedBox(width: 8),
-                    Text(l10n.importRecords),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
       ),
       body: Column(
         children: [
+          // Arama kutusu
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(16),
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                hintText: l10n.searchHint,
+                labelText: l10n.searchHint,
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
-                filled: true,
-                fillColor: Theme.of(context).colorScheme.surface,
               ),
             ),
           ),
+          
+          // Kayıtlar listesi
           Expanded(
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : _filteredRecords.isEmpty
                     ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.inbox_outlined,
-                              size: 64,
-                              color: Theme.of(context).colorScheme.outline,
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              _searchController.text.isEmpty
-                                  ? l10n.noRecordsYet
-                                  : l10n.noSearchResults,
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                color: Theme.of(context).colorScheme.outline,
-                              ),
-                            ),
-                          ],
+                        child: Text(
+                          _searchController.text.isEmpty
+                              ? l10n.noRecordsYet
+                              : l10n.noSearchResults,
+                          style: Theme.of(context).textTheme.bodyLarge,
                         ),
                       )
                     : ListView.builder(
@@ -214,49 +165,74 @@ class _CalculationRecordsScreenState extends State<CalculationRecordsScreen> {
                         itemBuilder: (context, index) {
                           final record = _filteredRecords[index];
                           return Card(
-                            margin: const EdgeInsets.only(bottom: 12),
+                            margin: const EdgeInsets.only(bottom: 8),
                             child: ListTile(
+                              contentPadding: const EdgeInsets.all(16),
                               title: Text(
                                 record.productName,
                                 style: const TextStyle(fontWeight: FontWeight.bold),
                               ),
-                              onTap: () => _showCalculationDetail(record),
                               subtitle: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    children: [
+                                      Icon(Icons.monetization_on, size: 16, color: Theme.of(context).colorScheme.primary),
+                                      const SizedBox(width: 4),
+                                      Text('${numberFormat.format(record.originalPrice)} \$ → ${numberFormat.format(record.finalPrice)} ₺'),
+                                    ],
+                                  ),
                                   const SizedBox(height: 4),
-                                  Text(l10n.originalPriceLabel(numberFormat.format(record.originalPrice))),
-                                  Text(l10n.exchangeRateLabel(numberFormat.format(record.exchangeRate))),
-                                  Text(l10n.discountRateLabel(numberFormat.format(record.discountRate))),
-                                  Text(
-                                    l10n.finalPriceLabel(numberFormat.format(record.finalPrice)),
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: Theme.of(context).colorScheme.primary,
-                                    ),
+                                  Row(
+                                    children: [
+                                      Icon(Icons.percent, size: 16, color: Theme.of(context).colorScheme.secondary),
+                                      const SizedBox(width: 4),
+                                      Text('%${numberFormat.format(record.discountRate)} ${l10n.discount1}'),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    children: [
+                                      Icon(Icons.access_time, size: 16, color: Theme.of(context).colorScheme.outline),
+                                      const SizedBox(width: 4),
+                                      Text(dateFormat.format(record.createdAt)),
+                                    ],
                                   ),
                                   if (record.notes != null && record.notes!.isNotEmpty) ...[
                                     const SizedBox(height: 4),
-                                    Text(
-                                      l10n.notesLabelRecord(record.notes!),
-                                      style: TextStyle(
-                                        color: Theme.of(context).colorScheme.outline,
-                                      ),
+                                    Row(
+                                      children: [
+                                        Icon(Icons.note, size: 16, color: Theme.of(context).colorScheme.outline),
+                                        const SizedBox(width: 4),
+                                        Expanded(
+                                          child: Text(
+                                            record.notes!,
+                                            style: TextStyle(
+                                              color: Theme.of(context).colorScheme.outline,
+                                              fontStyle: FontStyle.italic,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ],
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    dateFormat.format(record.createdAt),
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Theme.of(context).colorScheme.outline,
-                                    ),
-                                  ),
                                 ],
                               ),
-                              trailing: IconButton(
-                                icon: const Icon(Icons.delete_outline),
-                                onPressed: () => _showDeleteConfirmation(record),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.info_outline),
+                                    onPressed: () => _showSimpleDetailDialog(record),
+                                    tooltip: l10n.show,
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.delete_outline),
+                                    onPressed: () => _showDeleteConfirmation(record),
+                                    tooltip: l10n.delete,
+                                  ),
+                                ],
                               ),
                             ),
                           );
@@ -268,234 +244,34 @@ class _CalculationRecordsScreenState extends State<CalculationRecordsScreen> {
     );
   }
 
-  void _showCalculationDetail(CalculationRecord record) {
+  void _showSimpleDetailDialog(CalculationRecord record) {
     showDialog(
       context: context,
-      builder: (context) => CalculationDetailDialog(record: record),
-    ).then((updatedRecord) {
-      if (updatedRecord != null) {
-        _loadRecords();
+      builder: (context) => DetailedCalculationDialog(record: record),
+    ).then((result) {
+      if (result == 'updated') {
+        _loadRecords(); // Kayıtları yeniden yükle
       }
     });
   }
 
-  Future<void> _exportRecords() async {
-    try {
-      final records = await DatabaseHelper().getCalculationRecords();
-      
-      if (records.isEmpty) {
-        if (mounted) {
-          final l10n = AppLocalizations.of(context)!;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.noRecordsToExport)),
-          );
-        }
-        return;
-      }
-
-      final exportData = {
-        'exportDate': DateTime.now().toIso8601String(),
-        'appVersion': '2.0.0',
-        'recordCount': records.length,
-        'records': records.map((record) => {
-          'id': record.id,
-          'productName': record.productName,
-          'originalPrice': record.originalPrice,
-          'exchangeRate': record.exchangeRate,
-          'discountRate': record.discountRate,
-          'finalPrice': record.finalPrice,
-          'createdAt': record.createdAt.toIso8601String(),
-          'notes': record.notes,
-        }).toList(),
-      };
-
-      final jsonString = const JsonEncoder.withIndent('  ').convert(exportData);
-      
-      // Dosya adı oluştur
-      final now = DateTime.now();
-      final fileName = 'hesap_kayitlari_${DateFormat('yyyyMMdd_HHmmss').format(now)}.json';
-      
-      // Mobil ve desktop için - file picker ile kaydet
-      await _saveFileNative(jsonString, fileName);
-      
-      if (mounted) {
-        final l10n = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(l10n.exportSuccess(records.length.toString())),
-            duration: const Duration(seconds: 3),
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        final l10n = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.exportError(e.toString()))),
-        );
-      }
-    }
-  }
-
-  Future<void> _saveFileNative(String content, String fileName) async {
-    try {
-      // Dosya kaydetme konumu seç
-      final l10n = AppLocalizations.of(context)!;
-      String? outputFile = await FilePicker.platform.saveFile(
-        dialogTitle: l10n.saveRecordsDialogTitle,
-        fileName: fileName,
-        type: FileType.custom,
-        allowedExtensions: ['json'],
-      );
-
-      if (outputFile != null) {
-        final file = File(outputFile);
-        await file.writeAsString(content);
-        
-        if (mounted) {
-          final l10n = AppLocalizations.of(context)!;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(l10n.fileSaved(file.path)),
-              duration: const Duration(seconds: 4),
-            ),
-          );
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        final l10n = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.fileSaveError(e.toString()))),
-        );
-      }
-    }
-  }
-
-  Future<void> _importRecords() async {
-    try {
-      // Mobil ve desktop için - file picker ile aç
-      await _pickFileNative();
-    } catch (e) {
-      if (mounted) {
-        final l10n = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.importError(e.toString()))),
-        );
-      }
-    }
-  }
-
-  Future<void> _pickFileNative() async {
-    try {
-      final l10n = AppLocalizations.of(context)!;
-      final result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['json'],
-        dialogTitle: l10n.selectRecordsDialogTitle,
-      );
-
-      if (result != null && result.files.isNotEmpty) {
-        final file = File(result.files.first.path!);
-        final content = await file.readAsString();
-        await _processImport(content);
-      }
-    } catch (e) {
-      if (mounted) {
-        final l10n = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.fileReadError(e.toString()))),
-        );
-      }
-    }
-  }
-
-  Future<void> _processImport(String jsonContent) async {
-    try {
-      if (jsonContent.trim().isEmpty) {
-        if (mounted) {
-          final l10n = AppLocalizations.of(context)!;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.jsonContentEmpty)),
-          );
-        }
-        return;
-      }
-
-      final Map<String, dynamic> importData = jsonDecode(jsonContent);
-      
-      // Veri formatını kontrol et
-      if (!importData.containsKey('records') || importData['records'] is! List) {
-        throw Exception('Geçersiz JSON formatı');
-      }
-
-      final List<dynamic> recordsData = importData['records'];
-      final List<CalculationRecord> newRecords = [];
-
-      for (final recordData in recordsData) {
-        final record = CalculationRecord(
-          id: recordData['id'] ?? DateTime.now().millisecondsSinceEpoch.toString(),
-          productName: recordData['productName'] ?? '',
-          originalPrice: (recordData['originalPrice'] ?? 0.0).toDouble(),
-          exchangeRate: (recordData['exchangeRate'] ?? 0.0).toDouble(),
-          discountRate: (recordData['discountRate'] ?? 0.0).toDouble(),
-          finalPrice: (recordData['finalPrice'] ?? 0.0).toDouble(),
-          createdAt: DateTime.parse(recordData['createdAt'] ?? DateTime.now().toIso8601String()),
-          notes: recordData['notes'],
-        );
-        newRecords.add(record);
-      }
-
-      // Kayıtları veritabanına ekle
-      for (final record in newRecords) {
-        await DatabaseHelper().saveCalculationRecord(record);
-      }
-
-      // Listeyi yenile
-      await _loadRecords();
-
-      if (mounted) {
-        final l10n = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(l10n.importSuccess(newRecords.length.toString())),
-            duration: const Duration(seconds: 3),
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        final l10n = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.importError(e.toString()))),
-        );
-      }
-    }
-  }
 }
 
-class CalculationDetailDialog extends StatefulWidget {
+// Detaylı hesaplama dialog'u
+class DetailedCalculationDialog extends StatefulWidget {
   final CalculationRecord record;
 
-  const CalculationDetailDialog({super.key, required this.record});
+  const DetailedCalculationDialog({super.key, required this.record});
 
   @override
-  State<CalculationDetailDialog> createState() => _CalculationDetailDialogState();
+  State<DetailedCalculationDialog> createState() => _DetailedCalculationDialogState();
 }
 
-class _CalculationDetailDialogState extends State<CalculationDetailDialog> {
+class _DetailedCalculationDialogState extends State<DetailedCalculationDialog> {
+  bool _showBasicView = true;
+  bool _isLoadingRates = false;
   double? _currentUsdRate;
   double? _currentEurRate;
-  double? _updatedFinalPrice;
-  bool _isLoadingRates = false;
-  
-  // Güncel hesaplama detayları
-  double? _currentPriceConvert;
-  double? _currentPriceAfterDiscount;
-  double? _currentPriceBought;
-  double? _currentPriceBoughtTax;
-  double? _currentPriceWithProfit;
-  double? _currentKdvPrice;
 
   @override
   void initState() {
@@ -509,116 +285,204 @@ class _CalculationDetailDialogState extends State<CalculationDetailDialog> {
     });
 
     try {
-      await _fetchRatesDirectly();
+      await _fetchCurrentRates();
     } catch (e) {
-      // Kur yüklenirken hata
+      // Hata durumunda sessizce devam et
     }
 
-    _calculateUpdatedPrice();
-    
     setState(() {
       _isLoadingRates = false;
     });
   }
 
-  Future<void> _fetchRatesDirectly() async {
+  Future<void> _fetchCurrentRates() async {
     try {
       final response = await http.get(
         Uri.parse('https://www.isbank.com.tr/doviz-kurlari'),
         headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-          'Accept-Language': 'tr-TR,tr;q=0.9,en;q=0.8',
-          'Accept-Encoding': 'gzip, deflate, br',
-          'Connection': 'keep-alive',
-          'Upgrade-Insecure-Requests': '1',
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
         },
       );
 
       if (response.statusCode == 200) {
         final document = parse(response.body);
+        final rows = document.querySelectorAll('tr');
         
-        // USD için arama
-        final usdRows = document.querySelectorAll('tr');
-        for (final row in usdRows) {
+        for (final row in rows) {
           final cells = row.querySelectorAll('td');
           if (cells.length >= 3) {
             final currency = cells[0].text.trim();
+            final sellingRate = cells[2].text.trim().replaceAll(',', '.');
+            
             if (currency.contains('USD') || currency.contains('Amerikan Doları')) {
-              final sellingRate = cells[2].text.trim().replaceAll(',', '.');
               _currentUsdRate = double.tryParse(sellingRate);
-              break;
-            }
-          }
-        }
-
-        // EUR için arama
-        final eurRows = document.querySelectorAll('tr');
-        for (final row in eurRows) {
-          final cells = row.querySelectorAll('td');
-          if (cells.length >= 3) {
-            final currency = cells[0].text.trim();
-            if (currency.contains('EUR') || currency.contains('Euro')) {
-              final sellingRate = cells[2].text.trim().replaceAll(',', '.');
+            } else if (currency.contains('EUR') || currency.contains('Euro')) {
               _currentEurRate = double.tryParse(sellingRate);
-              break;
             }
           }
         }
       }
     } catch (e) {
-      // Kur yüklenirken hata
+      // Hata durumunda sessizce devam et
     }
   }
 
-  void _calculateUpdatedPrice() {
+  Future<void> _updateWithCurrentRate() async {
     if (_currentUsdRate == null) return;
-    
-    try {
-      final double originalPrice = widget.record.originalPrice;
-      final double currentRate = _currentUsdRate!;
-      final double totalDiscountRate = widget.record.discountRate / 100;
-      
-      // Hesaplama sayfasındaki gibi adım adım hesaplama
-      _currentPriceConvert = originalPrice * currentRate;
-      _currentPriceAfterDiscount = originalPrice * (1 - totalDiscountRate);
-      _currentPriceBought = _currentPriceAfterDiscount! * currentRate;
-      _currentPriceBoughtTax = _currentPriceBought! * 1.2;
-      
-      // Kar marjı hesabı (%40 kar marjı)
-      _currentPriceWithProfit = _currentPriceBought! * 1.4;
-      _currentKdvPrice = _currentPriceWithProfit! * 1.2;
-      
-      _updatedFinalPrice = _currentKdvPrice;
-    } catch (e) {
-      // Fiyat hesaplama hatası
-    }
-  }
 
-  Future<void> _updateRecordPrice() async {
-    if (_updatedFinalPrice == null) return;
-    
     try {
+      final l10n = AppLocalizations.of(context)!;
+      
+      // Güncel kurla yeni fiyat hesapla
+      final originalPrice = widget.record.originalPrice;
+      final discountRate = widget.record.discountRate / 100;
+      final discountedPrice = originalPrice * (1 - discountRate);
+      final convertedPrice = discountedPrice * _currentUsdRate!;
+      final priceWithProfit = convertedPrice * 1.4;
+      final finalPrice = priceWithProfit * 1.2;
+
+      // Yeni kayıt oluştur
       final updatedRecord = widget.record.copyWith(
-        finalPrice: _updatedFinalPrice!,
+        finalPrice: finalPrice,
         exchangeRate: _currentUsdRate!,
         createdAt: DateTime.now(),
       );
-      
+
       await DatabaseHelper().saveCalculationRecord(updatedRecord);
-      
+
       if (mounted) {
-        final l10n = AppLocalizations.of(context)!;
-        Navigator.pop(context, updatedRecord);
+        Navigator.pop(context, 'updated');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.priceUpdated)),
+          SnackBar(
+            content: Text(l10n.priceUpdated),
+            backgroundColor: Colors.green,
+          ),
         );
       }
     } catch (e) {
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.updateError(e.toString()))),
+          SnackBar(
+            content: Text(l10n.updateError(e.toString())),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _showEditOriginalPriceDialog() async {
+    final l10n = AppLocalizations.of(context)!;
+    final priceController = TextEditingController(
+      text: widget.record.originalPrice.toString(),
+    );
+
+    final newPrice = await showDialog<double>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.edit, color: Theme.of(context).colorScheme.primary),
+            const SizedBox(width: 8),
+            Text(l10n.editOriginalPrice),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              l10n.enterNewPrice,
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: priceController,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              decoration: InputDecoration(
+                labelText: l10n.newOriginalPrice,
+                prefixText: '\$ ',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                filled: true,
+                fillColor: Theme.of(context).colorScheme.surface,
+              ),
+              autofocus: true,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(l10n.cancel),
+          ),
+          ElevatedButton.icon(
+            onPressed: () {
+              final price = double.tryParse(priceController.text);
+              if (price != null && price > 0) {
+                Navigator.pop(context, price);
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(l10n.invalidPriceFormat),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            },
+            icon: const Icon(Icons.calculate),
+            label: Text(l10n.recalculateWithNewPrice),
+          ),
+        ],
+      ),
+    );
+
+    if (newPrice != null) {
+      await _updateWithNewOriginalPrice(newPrice);
+    }
+  }
+
+  Future<void> _updateWithNewOriginalPrice(double newOriginalPrice) async {
+    try {
+      final l10n = AppLocalizations.of(context)!;
+      
+      // Yeni orijinal fiyat ile hesapla
+      final discountRate = widget.record.discountRate / 100;
+      final discountedPrice = newOriginalPrice * (1 - discountRate);
+      final exchangeRate = _currentUsdRate ?? widget.record.exchangeRate;
+      final convertedPrice = discountedPrice * exchangeRate;
+      final priceWithProfit = convertedPrice * 1.4;
+      final finalPrice = priceWithProfit * 1.2;
+
+      // Yeni kayıt oluştur
+      final updatedRecord = widget.record.copyWith(
+        originalPrice: newOriginalPrice,
+        finalPrice: finalPrice,
+        exchangeRate: exchangeRate,
+        createdAt: DateTime.now(),
+      );
+
+      await DatabaseHelper().saveCalculationRecord(updatedRecord);
+
+      if (mounted) {
+        Navigator.pop(context, 'updated');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.priceUpdatedSuccessfully),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.updateError(e.toString())),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     }
@@ -626,210 +490,411 @@ class _CalculationDetailDialogState extends State<CalculationDetailDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final dateFormat = DateFormat('dd/MM/yyyy HH:mm');
     final numberFormat = NumberFormat('#,##0.00', 'tr_TR');
-    final l10n = AppLocalizations.of(context)!;
-    
+
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Container(
-        padding: const EdgeInsets.all(24),
-        constraints:  BoxConstraints(maxWidth: 500, maxHeight: MediaQuery.of(context).size.height * 0.9),
+        constraints: BoxConstraints(
+          maxWidth: 600,
+          maxHeight: MediaQuery.of(context).size.height * 0.85,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Icon(Icons.analytics, color: Theme.of(context).colorScheme.primary),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    widget.record.productName,
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
+            // Başlık
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primaryContainer,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(16),
+                  topRight: Radius.circular(16),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.analytics,
+                    color: Theme.of(context).colorScheme.onPrimaryContainer,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      widget.record.productName,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.onPrimaryContainer,
+                      ),
                     ),
                   ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.close),
-                  onPressed: () => Navigator.pop(context),
-                ),
-              ],
+                  // Görünüm değiştirme butonu
+                  IconButton(
+                    icon: Icon(
+                      _showBasicView ? Icons.expand_more : Icons.expand_less,
+                      color: Theme.of(context).colorScheme.onPrimaryContainer,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _showBasicView = !_showBasicView;
+                      });
+                    },
+                    tooltip: _showBasicView ? l10n.detailedView : l10n.basicView,
+                  ),
+                  IconButton(
+                    icon: Icon(
+                      Icons.close,
+                      color: Theme.of(context).colorScheme.onPrimaryContainer,
+                    ),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 24),
-            
+
+            // İçerik
             Expanded(
               child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildDetailSection(
-                      l10n.originalCalculationTitle,
-                      [
-                        _buildDetailRow(l10n.productNameDetail, widget.record.productName),
-                        _buildDetailRow(l10n.originalPriceDetail, '${numberFormat.format(widget.record.originalPrice)} \$'),
-                        _buildDetailRow(l10n.usedRateDetail, numberFormat.format(widget.record.exchangeRate)),
-                        _buildDetailRow(l10n.cumulativeDiscountDetail, '%${numberFormat.format(widget.record.discountRate)}'),
-                        _buildDetailRow(l10n.calculatedPriceDetail, '${numberFormat.format(widget.record.finalPrice)} ₺'),
-                        _buildDetailRow(l10n.calculationDateDetail, dateFormat.format(widget.record.createdAt)),
-                        if (widget.record.notes != null && widget.record.notes!.isNotEmpty)
-                          _buildDetailRow(l10n.notesDetail, widget.record.notes!),
-                      ],
-                    ),
-                    
-                    const SizedBox(height: 24),
-                    const Divider(),
-                    const SizedBox(height: 16),
-                    
-                    _buildDetailSection(
-                      l10n.currentRateCalculation,
-                      [
-                        if (_isLoadingRates)
-                          const Center(child: CircularProgressIndicator())
-                        else if (_currentUsdRate != null) ...[
-                          _buildDetailRow(l10n.currentUsdRateDetail, numberFormat.format(_currentUsdRate!)),
-                          _buildDetailRow(l10n.currentEurRateDetail, _currentEurRate != null ? numberFormat.format(_currentEurRate!) : l10n.couldNotLoad),
-                          const SizedBox(height: 12),
-                          const Divider(thickness: 1),
-                          const SizedBox(height: 8),
-                          Text(
-                            l10n.calculationSteps,
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          if (_currentPriceConvert != null) ...[
-                            _buildDetailRow(
-                              l10n.currencyConversion,
-                              '${numberFormat.format(widget.record.originalPrice)} \$ × ${numberFormat.format(_currentUsdRate!)} = ${numberFormat.format(_currentPriceConvert!)} ₺',
-                            ),
-                            _buildDetailRow(
-                              l10n.cumulativeDiscountSteps,
-                              l10n.multipleDiscountApplied,
-                              color: Theme.of(context).colorScheme.outline,
-                            ),
-                            _buildDetailRow(
-                              l10n.resultStep,
-                              '${numberFormat.format(widget.record.originalPrice)} \$ × (1 - %${numberFormat.format(widget.record.discountRate)}) = ${numberFormat.format(_currentPriceAfterDiscount!)} \$',
-                              isHighlighted: true,
-                            ),
-                            _buildDetailRow(
-                              l10n.purchasePriceDetail,
-                              '${numberFormat.format(_currentPriceAfterDiscount!)} \$ × ${numberFormat.format(_currentUsdRate!)} = ${numberFormat.format(_currentPriceBought!)} ₺',
-                              isHighlighted: true,
-                            ),
-                            _buildDetailRow(
-                              l10n.purchaseVatDetail,
-                              '${numberFormat.format(_currentPriceBought!)} ₺ × 1.2 = ${numberFormat.format(_currentPriceBoughtTax!)} ₺',
-                            ),
-                            _buildDetailRow(
-                              l10n.salePriceDetail,
-                              '${numberFormat.format(_currentPriceBought!)} ₺ × 1.4 = ${numberFormat.format(_currentPriceWithProfit!)} ₺',
-                              isHighlighted: true,
-                            ),
-                            _buildDetailRow(
-                              l10n.saleVatDetail,
-                              '${numberFormat.format(_currentPriceWithProfit!)} ₺ × 1.2 = ${numberFormat.format(_currentKdvPrice!)} ₺',
-                              isHighlighted: true,
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
-                            const SizedBox(height: 12),
-                            const Divider(thickness: 1),
-                            const SizedBox(height: 8),
-                            if (_updatedFinalPrice! != widget.record.finalPrice) ...[
-                              _buildDetailRow(
-                                l10n.priceChangeDetail,
-                                '${numberFormat.format(widget.record.finalPrice)} ₺ → ${numberFormat.format(_updatedFinalPrice!)} ₺',
-                                isHighlighted: true,
-                                color: (_updatedFinalPrice! - widget.record.finalPrice).isNegative 
-                                    ? Colors.red 
-                                    : Colors.green,
-                              ),
-                              _buildDetailRow(
-                                l10n.changeAmountDetail,
-                                '${(_updatedFinalPrice! - widget.record.finalPrice).isNegative ? '' : '+'}${numberFormat.format(_updatedFinalPrice! - widget.record.finalPrice)} ₺',
-                                isHighlighted: true,
-                                color: (_updatedFinalPrice! - widget.record.finalPrice).isNegative 
-                                    ? Colors.red 
-                                    : Colors.green,
-                              ),
-                            ],
-                          ],
-                        ] else
-                          Text(l10n.exchangeRateInfoUnavailable),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-                  ],
-                ),
+                padding: const EdgeInsets.all(20),
+                child: _showBasicView 
+                    ? _buildBasicView(l10n, dateFormat, numberFormat)
+                    : _buildDetailedView(l10n, dateFormat, numberFormat),
               ),
             ),
-            
-            if (_updatedFinalPrice != null && _updatedFinalPrice! != widget.record.finalPrice)
-              Padding(
-                padding: const EdgeInsets.only(top: 16),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: FilledButton.icon(
-                    onPressed: _updateRecordPrice,
-                    icon: const Icon(Icons.update),
-                    label: Text(l10n.updatePriceButtonDetail),
-                    style: FilledButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                    ),
-                  ),
+
+            // Alt butonlar
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(16),
+                  bottomRight: Radius.circular(16),
                 ),
               ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Üst satır - Görünüm değiştirme
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      TextButton.icon(
+                        onPressed: () {
+                          setState(() {
+                            _showBasicView = !_showBasicView;
+                          });
+                        },
+                        icon: Icon(_showBasicView ? Icons.visibility : Icons.visibility_off),
+                        label: Text(_showBasicView ? l10n.showDetailed : l10n.showBasic),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  // Alt satır - Aksiyon butonları
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    alignment: WrapAlignment.spaceEvenly,
+                    children: [
+                      ElevatedButton.icon(
+                        onPressed: _showEditOriginalPriceDialog,
+                        icon: const Icon(Icons.edit, size: 16),
+                        label: Text(
+                          l10n.editOriginalPrice,
+                          style: const TextStyle(fontSize: 11),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+                          foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          minimumSize: const Size(100, 32),
+                        ),
+                      ),
+                      if (_currentUsdRate != null)
+                        ElevatedButton.icon(
+                          onPressed: _updateWithCurrentRate,
+                          icon: const Icon(Icons.refresh, size: 16),
+                          label: Text(
+                            l10n.updatePriceButton,
+                            style: const TextStyle(fontSize: 11),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            minimumSize: const Size(100, 32),
+                          ),
+                        ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          minimumSize: const Size(80, 32),
+                        ),
+                        child: Text(l10n.ok),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildDetailSection(String title, List<Widget> children) {
+  Widget _buildBasicView(AppLocalizations l10n, DateFormat dateFormat, NumberFormat numberFormat) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          title,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).colorScheme.primary,
-          ),
+        _buildDetailCard(
+          l10n.calculationSummary,
+          Icons.receipt_long,
+          [
+            _buildDetailRow(l10n.originalPrice, '${numberFormat.format(widget.record.originalPrice)} \$', Icons.attach_money),
+            _buildDetailRow(l10n.usedRate, numberFormat.format(widget.record.exchangeRate), Icons.currency_exchange),
+            _buildDetailRow(l10n.totalDiscount, '%${numberFormat.format(widget.record.discountRate)}', Icons.percent),
+            _buildDetailRow(l10n.finalPriceVat, '${numberFormat.format(widget.record.finalPrice)} ₺', Icons.monetization_on, isHighlighted: true),
+            _buildDetailRow(l10n.calculationDate, dateFormat.format(widget.record.createdAt), Icons.access_time),
+            if (widget.record.notes != null && widget.record.notes!.isNotEmpty)
+              _buildDetailRow(l10n.notes, widget.record.notes!, Icons.note),
+          ],
         ),
-        const SizedBox(height: 12),
-        ...children,
+        
+        if (_currentUsdRate != null) ...[
+          const SizedBox(height: 16),
+          _buildCurrentRateCard(l10n, numberFormat),
+        ],
       ],
     );
   }
 
-  Widget _buildDetailRow(String label, String value, {bool isHighlighted = false, Color? color}) {
+  Widget _buildDetailedView(AppLocalizations l10n, DateFormat dateFormat, NumberFormat numberFormat) {
+    final originalPrice = widget.record.originalPrice;
+    final exchangeRate = widget.record.exchangeRate;
+    final discountRate = widget.record.discountRate / 100;
+    
+    // Hesaplama adımları
+    final convertedPrice = originalPrice * exchangeRate;
+    final discountedPrice = originalPrice * (1 - discountRate);
+    final purchasePrice = discountedPrice * exchangeRate;
+    final purchasePriceWithTax = purchasePrice * 1.2;
+    final salePriceWithProfit = purchasePrice * 1.4;
+    final finalPrice = salePriceWithProfit * 1.2;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildDetailCard(
+          l10n.originalCalculation,
+          Icons.receipt_long,
+          [
+            _buildDetailRow(l10n.productName, widget.record.productName, Icons.shopping_cart),
+            _buildDetailRow(l10n.calculationDate, dateFormat.format(widget.record.createdAt), Icons.access_time),
+            if (widget.record.notes != null && widget.record.notes!.isNotEmpty)
+              _buildDetailRow(l10n.notes, widget.record.notes!, Icons.note),
+          ],
+        ),
+        
+        const SizedBox(height: 16),
+        
+        _buildDetailCard(
+          l10n.calculationSteps,
+          Icons.calculate,
+          [
+            _buildCalculationStep('1. ${l10n.currencyConversionStep}', '${numberFormat.format(originalPrice)} \$ × ${numberFormat.format(exchangeRate)} = ${numberFormat.format(convertedPrice)} ₺'),
+            _buildCalculationStep('2. ${l10n.discountApplicationStep}', '${numberFormat.format(originalPrice)} \$ × %${numberFormat.format(widget.record.discountRate)} = ${numberFormat.format(discountedPrice)} \$'),
+            _buildCalculationStep('3. ${l10n.purchasePriceStep}', '${numberFormat.format(discountedPrice)} \$ × ${numberFormat.format(exchangeRate)} = ${numberFormat.format(purchasePrice)} ₺'),
+            _buildCalculationStep('4. ${l10n.purchaseVatStep}', '${numberFormat.format(purchasePrice)} ₺ × 1.2 = ${numberFormat.format(purchasePriceWithTax)} ₺'),
+            _buildCalculationStep('5. ${l10n.salePriceStep}', '${numberFormat.format(purchasePrice)} ₺ × 1.4 = ${numberFormat.format(salePriceWithProfit)} ₺'),
+            _buildCalculationStep('6. ${l10n.saleVatStep}', '${numberFormat.format(salePriceWithProfit)} ₺ × 1.2 = ${numberFormat.format(finalPrice)} ₺', isResult: true),
+          ],
+        ),
+        
+        if (_currentUsdRate != null) ...[
+          const SizedBox(height: 16),
+          _buildCurrentRateCard(l10n, numberFormat),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildCurrentRateCard(AppLocalizations l10n, NumberFormat numberFormat) {
+    if (_isLoadingRates) {
+      return const Card(
+        child: Padding(
+          padding: EdgeInsets.all(16),
+          child: Center(child: CircularProgressIndicator()),
+        ),
+      );
+    }
+
+    if (_currentUsdRate == null) {
+      return Card(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Text(
+            l10n.exchangeRateLoadError,
+            style: TextStyle(color: Theme.of(context).colorScheme.error),
+          ),
+        ),
+      );
+    }
+
+    // Güncel kurla fiyat hesapla
+    final originalPrice = widget.record.originalPrice;
+    final discountRate = widget.record.discountRate / 100;
+    final discountedPrice = originalPrice * (1 - discountRate);
+    final purchasePrice = discountedPrice * _currentUsdRate!;
+    final salePriceWithProfit = purchasePrice * 1.4;
+    final newFinalPrice = salePriceWithProfit * 1.2;
+    final priceDifference = newFinalPrice - widget.record.finalPrice;
+
+    return Card(
+      color: Theme.of(context).colorScheme.secondaryContainer,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  Icons.update,
+                  color: Theme.of(context).colorScheme.onSecondaryContainer,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  l10n.currentRateCalculation,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.onSecondaryContainer,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            _buildDetailRow(l10n.currentUsdRate, numberFormat.format(_currentUsdRate!), Icons.attach_money),
+            if (_currentEurRate != null)
+              _buildDetailRow(l10n.currentEurRate, numberFormat.format(_currentEurRate!), Icons.euro),
+            const Divider(),
+            _buildDetailRow(l10n.newPrice, '${numberFormat.format(newFinalPrice)} ₺', Icons.monetization_on, isHighlighted: true),
+            _buildDetailRow(l10n.priceDifference, '${priceDifference >= 0 ? '+' : ''}${numberFormat.format(priceDifference)} ₺', 
+                priceDifference >= 0 ? Icons.trending_up : Icons.trending_down, 
+                isHighlighted: true, 
+                color: priceDifference >= 0 ? Colors.green : Colors.red),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDetailCard(String title, IconData icon, List<Widget> children) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(icon, color: Theme.of(context).colorScheme.primary),
+                const SizedBox(width: 8),
+                Text(
+                  title,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            ...children,
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value, IconData icon, {bool isHighlighted = false, Color? color}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            width: 120,
-            child: Text(
-              label,
-              style: TextStyle(
-                fontWeight: FontWeight.w500,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+          Icon(
+            icon,
+            size: 16,
+            color: color ?? (isHighlighted 
+                ? Theme.of(context).colorScheme.primary 
+                : Theme.of(context).colorScheme.outline),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Theme.of(context).colorScheme.outline,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: isHighlighted ? FontWeight.bold : FontWeight.normal,
+                    color: color ?? (isHighlighted 
+                        ? Theme.of(context).colorScheme.primary 
+                        : Theme.of(context).colorScheme.onSurface),
+                  ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Text(
-              value,
-              style: TextStyle(
-                fontWeight: isHighlighted ? FontWeight.bold : FontWeight.normal,
-                color: color ?? (isHighlighted ? Theme.of(context).colorScheme.primary : null),
-              ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCalculationStep(String step, String calculation, {bool isResult = false}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+      margin: const EdgeInsets.only(bottom: 8),
+      decoration: BoxDecoration(
+        color: isResult 
+            ? Theme.of(context).colorScheme.primaryContainer
+            : Theme.of(context).colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            step,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: isResult 
+                  ? Theme.of(context).colorScheme.onPrimaryContainer
+                  : Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            calculation,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: isResult ? FontWeight.bold : FontWeight.normal,
+              color: isResult 
+                  ? Theme.of(context).colorScheme.onPrimaryContainer
+                  : Theme.of(context).colorScheme.onSurface,
             ),
           ),
         ],

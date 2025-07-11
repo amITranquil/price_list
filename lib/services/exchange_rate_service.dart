@@ -1,6 +1,5 @@
 import 'package:http/http.dart' as http;
 import 'package:html/parser.dart';
-import 'dart:convert';
 
 class ExchangeRates {
   final double? usdRate;
@@ -17,17 +16,13 @@ class ExchangeRates {
 }
 
 abstract class ExchangeRateService {
-  Future<ExchangeRates> fetchRates({bool useDirectScraping = true});
+  Future<ExchangeRates> fetchRates();
 }
 
 class WebExchangeRateService implements ExchangeRateService {
   @override
-  Future<ExchangeRates> fetchRates({bool useDirectScraping = true}) async {
-    if (useDirectScraping) {
-      return await _fetchRatesDirectly();
-    } else {
-      return await _fetchRatesFromPHP();
-    }
+  Future<ExchangeRates> fetchRates() async {
+    return await _fetchRatesDirectly();
   }
 
   Future<ExchangeRates> _fetchRatesDirectly() async {
@@ -90,40 +85,4 @@ class WebExchangeRateService implements ExchangeRateService {
     );
   }
 
-  Future<ExchangeRates> _fetchRatesFromPHP() async {
-    double? usdRate;
-    double? eurRate;
-    
-    try {
-      final response = await http.get(
-        Uri.parse('https://finans.truncgil.com/today.json'),
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        
-        if (data['USD'] != null && data['USD']['Satış'] != null) {
-          final usdSelling = data['USD']['Satış'].toString().replaceAll(',', '.');
-          usdRate = double.tryParse(usdSelling);
-        }
-        
-        if (data['EUR'] != null && data['EUR']['Satış'] != null) {
-          final eurSelling = data['EUR']['Satış'].toString().replaceAll(',', '.');
-          eurRate = double.tryParse(eurSelling);
-        }
-      }
-    } catch (e) {
-      // Hata durumunda null değerler döndürülür
-    }
-
-    return ExchangeRates(
-      usdRate: usdRate,
-      eurRate: eurRate,
-      dataSource: 'PHP (JSON API)',
-      fetchTime: DateTime.now(),
-    );
-  }
 }

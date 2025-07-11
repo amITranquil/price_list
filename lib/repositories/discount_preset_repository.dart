@@ -5,6 +5,7 @@ import '../services/database_service.dart';
 abstract class DiscountPresetRepository {
   Future<List<DiscountPreset>> getDiscountPresets();
   Future<void> saveDiscountPreset(DiscountPreset preset);
+  Future<void> updateDiscountPreset(DiscountPreset preset);
   Future<void> deleteDiscountPreset(String id);
   Future<DiscountPreset?> getDiscountPresetById(String id);
 }
@@ -51,6 +52,19 @@ class HiveDiscountPresetRepository implements DiscountPresetRepository {
     } catch (e) {
       if (kDebugMode) {
         print('Error saving discount preset: $e');
+      }
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> updateDiscountPreset(DiscountPreset preset) async {
+    try {
+      final box = await _databaseService.getBox(_boxName);
+      await box.put(preset.id, preset.toStorageString());
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error updating discount preset: $e');
       }
       rethrow;
     }

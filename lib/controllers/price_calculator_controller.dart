@@ -86,9 +86,7 @@ class PriceCalculatorController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _exchangeRates = await _exchangeRateService.fetchRates(
-        useDirectScraping: useDirectScraping,
-      );
+      _exchangeRates = await _exchangeRateService.fetchRates();
     } catch (e) {
       // Handle error
       _exchangeRates = null;

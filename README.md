@@ -1,6 +1,6 @@
 # Listeden Hesaplama (Price List Calculator)
 
-![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)
+![Version](https://img.shields.io/badge/version-2.5.0-blue.svg)
 ![Flutter](https://img.shields.io/badge/Flutter-%2302569B.svg?style=flat&logo=Flutter&logoColor=white)
 ![Dart](https://img.shields.io/badge/dart-%230175C2.svg?style=flat&logo=dart&logoColor=white)
 
@@ -42,11 +42,20 @@ Döviz kurlarına dayalı fiyat hesaplama uygulaması. USD, EUR ve TL para birim
 - **Ayar Kaydetme**: Sık kullanılan iskonto kombinasyonlarını kaydetme
 - **Hızlı Uygulama**: Kaydedilen ayarları tek tıkla uygulama
 - **Preset Yönetimi**: Kayıtlı ayarları düzenleme ve silme
+- **Preset Düzenleme**: Mevcut preset'leri değiştirme imkanı
+
+### 📊 Hesap Kayıtları
+- **Otomatik Kayıt**: Tüm hesaplamaları otomatik saklama
+- **Detaylı Görünüm**: Basit ve detaylı hesap görüntüleme
+- **Fiyat Güncelleme**: Güncel kurlarla fiyat yenileme
+- **Orijinal Fiyat Düzenleme**: Kayıtlı hesapların fiyatını değiştirme
+- **Arama ve Filtreleme**: Hesap kayıtlarında arama yapma
 
 ### 🌍 Çoklu Dil Desteği
 - **Türkçe** ve **İngilizce** arayüz
 - **Dinamik Çeviri**: Uygulama içinde dil değiştirme
 - **Yerelleştirme**: Tarih ve para formatları
+- **Tam Lokalizasyon**: Tüm UI elementleri ve hata mesajları
 
 ### 📱 Platform Desteği
 - **Android**: Tam özellik desteği
@@ -82,18 +91,18 @@ Döviz kurlarına dayalı fiyat hesaplama uygulaması. USD, EUR ve TL para birim
 ### 📦 Hazır Uygulama İndirme
 
 #### 🤖 Android
-1. [Releases sayfasından](https://github.com/amITranquil/price_list/releases) `price_list_android_v2.0.0.apk` dosyasını indirin
+1. [Releases sayfasından](https://github.com/amITranquil/price_list/releases) `price_list_android_v2.5.0.apk` dosyasını indirin
 2. Telefon ayarlarında "Bilinmeyen kaynaklar" seçeneğini etkinleştirin
 3. APK dosyasını çalıştırıp kurun
 
 #### 🍎 macOS
-1. [Releases sayfasından](https://github.com/amITranquil/price_list/releases) `price_list_macos_v2.0.0.zip` dosyasını indirin
+1. [Releases sayfasından](https://github.com/amITranquil/price_list/releases) `price_list_macos_v2.5.0.zip` dosyasını indirin
 2. ZIP dosyasını çıkarın
 3. `Price List.app` dosyasını Applications klasörüne sürükleyin
 4. İlk açılışta "Güvenlik ve Gizlilik" ayarlarından izin verin
 
 #### 🪟 Windows
-1. [Releases sayfasından](https://github.com/amITranquil/price_list/releases) `price_list_windows_v2.0.0.zip` dosyasını indirin
+1. [Releases sayfasından](https://github.com/amITranquil/price_list/releases) `price_list_windows_v2.5.0.zip` dosyasını indirin
 2. ZIP dosyasını istediğiniz klasöre çıkarın
 3. `price_list.exe` dosyasını çalıştırın
 4. İlk açılışta Windows Defender uyarısı çıkarsa "Yine de çalıştır" seçeneğini tıklayın
@@ -345,7 +354,19 @@ Bu proje özel kullanım içindir. Ticari kullanım yasaktır.
 
 ## 🔄 Sürüm Geçmişi
 
-### v2.0.0 (Güncel)
+### v2.5.0 (Güncel)
+- ✅ **Hesap Kayıtları**: Tüm hesaplamaları otomatik saklama
+- ✅ **Detaylı Görünüm**: Basit ve detaylı hesap görüntüleme modu
+- ✅ **Fiyat Güncelleme**: Güncel kurlarla otomatik fiyat yenileme
+- ✅ **Orijinal Fiyat Düzenleme**: Kayıtlı hesapların fiyatını değiştirme
+- ✅ **Preset Düzenleme**: Mevcut preset'leri değiştirme imkanı
+- ✅ **Tam Lokalizasyon**: Tüm UI elementleri ve hata mesajları lokalize
+- ✅ **Responsive Dialog**: Gelişmiş ve kullanıcı dostu dialog tasarımı
+- ✅ **Arama ve Filtreleme**: Hesap kayıtlarında arama yapma
+- ✅ **Clean Architecture**: SOLID prensiplerine uygun mimari
+- ✅ **Dependency Injection**: GetIt ile temiz bağımlılık yönetimi
+
+### v2.0.0
 - ✅ TL para birimi desteği eklendi
 - ✅ Dinamik para birimi simgeleri
 - ✅ Geliştirilmiş kullanıcı arayüzü

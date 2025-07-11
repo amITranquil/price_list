@@ -27,20 +27,20 @@ class StandardValidationService implements ValidationService {
   @override
   ValidationResult validatePrice(String price) {
     if (price.trim().isEmpty) {
-      return ValidationResult.error('Price cannot be empty', 'originalPriceEmpty');
+      return ValidationResult.error('originalPriceEmpty', 'originalPriceEmpty');
     }
     
     final parsedPrice = double.tryParse(price.trim());
     if (parsedPrice == null) {
-      return ValidationResult.error('Invalid price format', 'invalidPriceFormat');
+      return ValidationResult.error('invalidPriceFormat', 'invalidPriceFormat');
     }
     
     if (parsedPrice <= 0) {
-      return ValidationResult.error('Price must be greater than zero', 'priceGreaterThanZero');
+      return ValidationResult.error('priceGreaterThanZero', 'priceGreaterThanZero');
     }
     
     if (parsedPrice > 1000000) {
-      return ValidationResult.error('Price is too large', 'priceTooLarge');
+      return ValidationResult.error('priceTooLarge', 'priceTooLarge');
     }
     
     return ValidationResult.success();
@@ -54,15 +54,15 @@ class StandardValidationService implements ValidationService {
     
     final parsedPercentage = double.tryParse(percentage.trim());
     if (parsedPercentage == null) {
-      return ValidationResult.error('Invalid percentage format', 'invalidPercentageFormat');
+      return ValidationResult.error('invalidPercentageFormat', 'invalidPercentageFormat');
     }
     
     if (parsedPercentage < 0) {
-      return ValidationResult.error('Percentage cannot be negative', 'percentageCannotBeNegative');
+      return ValidationResult.error('percentageCannotBeNegative', 'percentageCannotBeNegative');
     }
     
     if (parsedPercentage > 100) {
-      return ValidationResult.error('Percentage cannot be greater than 100', 'percentageCannotBeGreaterThan100');
+      return ValidationResult.error('percentageCannotBeGreaterThan100', 'percentageCannotBeGreaterThan100');
     }
     
     return ValidationResult.success();
@@ -71,15 +71,15 @@ class StandardValidationService implements ValidationService {
   @override
   ValidationResult validatePresetLabel(String label) {
     if (label.trim().isEmpty) {
-      return ValidationResult.error('Preset label cannot be empty', 'presetLabelEmpty');
+      return ValidationResult.error('presetLabelEmpty', 'presetLabelEmpty');
     }
     
     if (label.trim().length < 2) {
-      return ValidationResult.error('Preset label must be at least 2 characters', 'presetLabelTooShort');
+      return ValidationResult.error('presetLabelTooShort', 'presetLabelTooShort');
     }
     
     if (label.trim().length > 50) {
-      return ValidationResult.error('Preset label cannot be longer than 50 characters', 'presetLabelTooLong');
+      return ValidationResult.error('presetLabelTooLong', 'presetLabelTooLong');
     }
     
     return ValidationResult.success();
@@ -88,15 +88,15 @@ class StandardValidationService implements ValidationService {
   @override
   ValidationResult validateProductName(String name) {
     if (name.trim().isEmpty) {
-      return ValidationResult.error('Product name is required', 'productNameRequired');
+      return ValidationResult.error('productNameRequired', 'productNameRequired');
     }
     
     if (name.trim().length < 2) {
-      return ValidationResult.error('Product name must be at least 2 characters', 'productNameTooShort');
+      return ValidationResult.error('productNameTooShort', 'productNameTooShort');
     }
     
     if (name.trim().length > 100) {
-      return ValidationResult.error('Product name cannot be longer than 100 characters', 'productNameTooLong');
+      return ValidationResult.error('productNameTooLong', 'productNameTooLong');
     }
     
     return ValidationResult.success();
@@ -105,20 +105,20 @@ class StandardValidationService implements ValidationService {
   @override
   ValidationResult validatePinCode(String pin) {
     if (pin.trim().isEmpty) {
-      return ValidationResult.error('PIN code cannot be empty', 'pinCodeEmpty');
+      return ValidationResult.error('pinCodeEmpty', 'pinCodeEmpty');
     }
     
     if (pin.trim().length < 4) {
-      return ValidationResult.error('PIN code must be at least 4 characters', 'pinCodeTooShort');
+      return ValidationResult.error('pinCodeTooShort', 'pinCodeTooShort');
     }
     
     if (pin.trim().length > 8) {
-      return ValidationResult.error('PIN code cannot be longer than 8 characters', 'pinCodeTooLong');
+      return ValidationResult.error('pinCodeTooLong', 'pinCodeTooLong');
     }
     
     // Check if PIN contains only digits
     if (!RegExp(r'^[0-9]+$').hasMatch(pin.trim())) {
-      return ValidationResult.error('PIN code must contain only numbers', 'pinCodeOnlyNumbers');
+      return ValidationResult.error('pinCodeOnlyNumbers', 'pinCodeOnlyNumbers');
     }
     
     return ValidationResult.success();

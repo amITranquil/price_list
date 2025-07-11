@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import '/utils/database_helper.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:provider/provider.dart';
+import '../core/architecture/clean_architecture_provider.dart';
 
 class UpdatePinPage extends StatefulWidget {
   const UpdatePinPage({super.key});
@@ -19,11 +20,11 @@ class UpdatePinPageState extends State<UpdatePinPage> {
     final newPin = _newPinController.text;
     final confirmNewPin = _confirmNewPinController.text;
     final l10n = AppLocalizations.of(context)!;
-
-    final storedPin = await DatabaseHelper().getPinCode();
+    final provider = context.read<CleanArchitectureProvider>();
 
     // Eski PIN'in doğruluğunu kontrol et
-    if (oldPin != storedPin) {
+    final isOldPinValid = await provider.validatePinCode(oldPin);
+    if (!isOldPinValid) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(l10n.wrongOldPin)),
@@ -42,8 +43,11 @@ class UpdatePinPageState extends State<UpdatePinPage> {
 
     // Yeni PIN kodlarının eşleşmesini kontrol et
     if (newPin == confirmNewPin) {
-      await DatabaseHelper().setPinCode(newPin);
+      await provider.setPinCode(newPin);
       if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('PIN kodu başarıyla güncellendi')),
+      );
       Navigator.pop(context);
     } else {
       if (!mounted) return;

@@ -1,5 +1,6 @@
 // Clean Architecture Provider for Price Calculator
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../services/price_calculation_service.dart';
 import '../../services/exchange_rate_service.dart';
 import '../../services/validation_service.dart';
@@ -34,9 +35,10 @@ class CleanArchitectureProvider extends ChangeNotifier {
   // Application state (UI concerns)
   String _selectedCurrency = 'USD';
   bool _isAdvancedExpanded = false;
-  bool _showPrices = false;
+  bool _showPrices = false; // Kar marjı başlangıçta gizli
+  bool _showProfitMargin = false; // Kar marjı görünürlüğü
   bool _isLoading = false;
-  final bool _hasPinCode = false;
+  bool _hasPinCode = false;
   String? _errorMessage;
 
   // Infrastructure (controllers for UI layer)
@@ -48,6 +50,9 @@ class CleanArchitectureProvider extends ChangeNotifier {
   final TextEditingController presetLabelController = TextEditingController();
   final TextEditingController productNameController = TextEditingController();
   final TextEditingController notesController = TextEditingController();
+  final TextEditingController usdRateController = TextEditingController();
+  final TextEditingController eurRateController = TextEditingController();
+  final TextEditingController tlRateController = TextEditingController();
 
   // Getters (presentation layer interface)
   PriceCalculationResult? get calculationResult => _calculationResult;
@@ -58,6 +63,7 @@ class CleanArchitectureProvider extends ChangeNotifier {
   String get selectedCurrency => _selectedCurrency;
   bool get isAdvancedExpanded => _isAdvancedExpanded;
   bool get showPrices => _showPrices;
+  bool get showProfitMargin => _showProfitMargin;
   bool get isLoading => _isLoading;
   bool get hasPinCode => _hasPinCode;
   String? get errorMessage => _errorMessage;
@@ -99,9 +105,16 @@ class CleanArchitectureProvider extends ChangeNotifier {
         }
 
         final originalPrice = priceController.text.toDoubleOrDefault();
-        final exchangeRate = _selectedCurrency == 'USD' 
-            ? _exchangeRates!.usdRate 
-            : _exchangeRates!.eurRate;
+        double? exchangeRate;
+        
+        // Get exchange rate based on selected currency
+        if (_selectedCurrency == 'USD') {
+          exchangeRate = _exchangeRates!.usdRate;
+        } else if (_selectedCurrency == 'EUR') {
+          exchangeRate = _exchangeRates!.eurRate;
+        } else if (_selectedCurrency == 'TRY') {
+          exchangeRate = 1.0; // TL base currency
+        }
         
         if (exchangeRate == null) {
           logError('Selected currency rate not available: $_selectedCurrency');
@@ -158,9 +171,9 @@ class CleanArchitectureProvider extends ChangeNotifier {
     });
   }
 
-  Future<Result<ExchangeRates>> fetchExchangeRatesUseCase({bool useDirectScraping = true}) async {
+  Future<Result<ExchangeRates>> fetchExchangeRatesUseCase() async {
     try {
-      final rates = await _exchangeRateService.fetchRates(useDirectScraping: useDirectScraping);
+      final rates = await _exchangeRateService.fetchRates();
       return Result.success(rates);
     } catch (e) {
       return Result.error('Failed to fetch exchange rates: ${e.toString()}');
@@ -254,14 +267,23 @@ class CleanArchitectureProvider extends ChangeNotifier {
     _setLoading(false);
   }
 
-  Future<void> fetchExchangeRates({bool useDirectScraping = true}) async {
+  Future<void> fetchExchangeRates() async {
     _setLoading(true);
     _clearError();
 
-    final result = await fetchExchangeRatesUseCase(useDirectScraping: useDirectScraping);
+    final result = await fetchExchangeRatesUseCase();
     
     if (result.isSuccess) {
       _exchangeRates = result.data;
+      // Update manual rate controllers with fetched rates
+      if (result.data!.usdRate != null) {
+        usdRateController.text = result.data!.usdRate.toString();
+      }
+      if (result.data!.eurRate != null) {
+        eurRateController.text = result.data!.eurRate.toString();
+      }
+      // TL always 1.00 (base currency)
+      tlRateController.text = '1.00';
     } else {
       _errorHandlingService.handleError(ErrorFactory.networkError(result.error!));
     }
@@ -320,6 +342,63 @@ class CleanArchitectureProvider extends ChangeNotifier {
         _showError(context, 'Failed to delete preset: ${e.toString()}');
       } else {
         _showErrorSafe('Failed to delete preset: ${e.toString()}');
+      }
+    }
+    
+    _setLoading(false);
+  }
+
+  Future<void> updatePreset(BuildContext context, DiscountPreset preset) async {
+    _setLoading(true);
+    _clearError();
+
+    try {
+      // Validate inputs
+      final labelValidation = _validationService.validatePresetLabel(presetLabelController.text);
+      if (!labelValidation.isValid) {
+        if (context.mounted) {
+          _showError(context, labelValidation.errorMessage!);
+        }
+        _setLoading(false);
+        return;
+      }
+      
+      final updatedPreset = DiscountPreset(
+        id: preset.id,
+        label: presetLabelController.text.trim(),
+        discounts: [
+          discount1Controller.text.toDoubleOrDefault(),
+          discount2Controller.text.toDoubleOrDefault(),
+          discount3Controller.text.toDoubleOrDefault(),
+        ],
+        profitMargin: profitController.text.toDoubleOrDefault(AppConstants.defaultProfitMargin),
+      );
+      
+      await _presetRepository.updateDiscountPreset(updatedPreset);
+      
+      // Update local list
+      final index = _presets.indexWhere((p) => p.id == preset.id);
+      if (index != -1) {
+        _presets[index] = updatedPreset;
+        _selectedPreset = updatedPreset;
+      }
+      
+      presetLabelController.clear();
+      notifyListeners();
+      
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context)?.presetUpdatedSuccessfully ?? 'Preset başarıyla güncellendi'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        _showError(context, 'Failed to update preset: ${e.toString()}');
+      } else {
+        _showErrorSafe('Failed to update preset: ${e.toString()}');
       }
     }
     
@@ -408,12 +487,120 @@ class CleanArchitectureProvider extends ChangeNotifier {
       await Future.wait([
         loadPresets(),
         fetchExchangeRates(),
+        _checkPinCode(),
       ]);
       
       profitController.text = AppConstants.defaultProfitMargin.toString();
+      // TL always 1.00 (base currency)
+      tlRateController.text = '1.00';
       notifyListeners();
     });
     
     logInfo('Clean Architecture Provider initialized successfully');
+  }
+
+  // PIN kodu kontrol ve yönetimi (basit in-memory storage)
+  static String? _storedPinCode;
+  
+  Future<void> _checkPinCode() async {
+    try {
+      // Eğer PIN kodu yoksa default olarak '1234' ayarla
+      if (_storedPinCode == null || _storedPinCode!.isEmpty) {
+        _storedPinCode = '1234';
+      }
+      _hasPinCode = _storedPinCode != null && _storedPinCode!.isNotEmpty;
+      notifyListeners();
+    } catch (e) {
+      Logger.error('Failed to check PIN code');
+    }
+  }
+
+  Future<void> setPinCode(String pinCode) async {
+    try {
+      _storedPinCode = pinCode;
+      _hasPinCode = true;
+      notifyListeners();
+      Logger.info('PIN code set successfully');
+    } catch (e) {
+      Logger.error('Failed to set PIN code');
+    }
+  }
+
+  Future<bool> validatePinCode(String inputPin) async {
+    try {
+      return _storedPinCode == inputPin;
+    } catch (e) {
+      Logger.error('Failed to validate PIN code');
+      return false;
+    }
+  }
+
+  Future<void> promptPinAndToggleVisibility(BuildContext context) async {
+    if (!_hasPinCode) {
+      // PIN kodu yoksa doğrudan göster
+      _showPrices = !_showPrices;
+      notifyListeners();
+      return;
+    }
+    
+    if (_showPrices) {
+      // Zaten görünüyorsa gizle
+      _showPrices = false;
+      notifyListeners();
+      return;
+    }
+    
+    // PIN kodu iste
+    final pinController = TextEditingController();
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(AppLocalizations.of(context)?.enterPinCode ?? 'PIN Kodu Girin'),
+        content: TextField(
+          controller: pinController,
+          obscureText: true,
+          keyboardType: TextInputType.number,
+          maxLength: 8,
+          decoration: InputDecoration(
+            labelText: AppLocalizations.of(context)?.pinCodeLabel ?? 'PIN Kodu',
+            hintText: AppLocalizations.of(context)?.pinCodeHint ?? '4-8 haneli PIN kodu',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(AppLocalizations.of(context)?.cancel ?? 'İptal'),
+          ),
+          TextButton(
+            onPressed: () async {
+              final isValid = await validatePinCode(pinController.text);
+              if (context.mounted) {
+                if (isValid) {
+                  Navigator.pop(context, true);
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(AppLocalizations.of(context)?.invalidPinCode ?? 'Hatalı PIN kodu'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              }
+            },
+            child: Text(AppLocalizations.of(context)?.ok ?? 'Tamam'),
+          ),
+        ],
+      ),
+    );
+    
+    if (result == true) {
+      _showPrices = true;
+      notifyListeners();
+    }
+  }
+
+  void toggleProfitMarginVisibility() {
+    _showProfitMargin = !_showProfitMargin;
+    notifyListeners();
   }
 }

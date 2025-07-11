@@ -73,7 +73,7 @@ if not exist "build\windows\x64\runner\Release" (
     exit /b 1
 )
 
-powershell -Command "Compress-Archive -Path 'build\windows\x64\runner\Release\*' -DestinationPath 'price_list_windows_v2.1.0.zip' -Force"
+powershell -Command "Compress-Archive -Path 'build\windows\x64\runner\Release\*' -DestinationPath 'price_list_windows_v2.5.0.zip' -Force"
 if errorlevel 1 (
     echo HATA: Zip oluşturma başarısız!
     echo PowerShell hatası veya dosya erişim sorunu olabilir.
@@ -89,11 +89,11 @@ echo        BUILD BAŞARIYLA TAMAMLANDI!
 echo ========================================
 echo.
 echo Oluşturulan dosyalar:
-echo - price_list_windows_v2.1.0.zip
+echo - price_list_windows_v2.5.0.zip
 echo - build\windows\x64\runner\Release\ klasörü
 echo.
 echo GitHub Release güncellemesi için:
-echo gh release delete-asset v2.0.0 price_list_windows_v2.0.0.zip --yes
-echo gh release upload v2.0.0 price_list_windows_v2.1.0.zip
+echo gh release delete-asset v2.5.0 price_list_windows_v2.5.0.zip --yes
+echo gh release upload v2.5.0 price_list_windows_v2.5.0.zip
 echo.
 pause

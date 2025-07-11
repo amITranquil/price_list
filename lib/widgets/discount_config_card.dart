@@ -11,8 +11,11 @@ class DiscountConfigCard extends StatelessWidget {
   final VoidCallback onToggleExpanded;
   final VoidCallback onSavePreset;
   final VoidCallback onDeletePreset;
+  final ValueChanged<DiscountPreset> onEditPreset;
   final List<DiscountPreset> presets;
   final DiscountPreset? selectedPreset;
+  final bool showProfitMargin;
+  final VoidCallback onToggleProfitVisibility;
 
   const DiscountConfigCard({
     super.key,
@@ -24,8 +27,11 @@ class DiscountConfigCard extends StatelessWidget {
     required this.onToggleExpanded,
     required this.onSavePreset,
     required this.onDeletePreset,
+    required this.onEditPreset,
     required this.presets,
     required this.selectedPreset,
+    required this.showProfitMargin,
+    required this.onToggleProfitVisibility,
   });
 
   @override
@@ -121,6 +127,7 @@ class DiscountConfigCard extends StatelessWidget {
                         child: TextField(
                           controller: profitController,
                           keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          obscureText: !showProfitMargin,
                           decoration: InputDecoration(
                             labelText: l10n.profitMargin,
                             border: OutlineInputBorder(
@@ -128,6 +135,12 @@ class DiscountConfigCard extends StatelessWidget {
                             ),
                             filled: true,
                             fillColor: Theme.of(context).colorScheme.surface,
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                showProfitMargin ? Icons.visibility : Icons.visibility_off,
+                              ),
+                              onPressed: onToggleProfitVisibility,
+                            ),
                           ),
                         ),
                       ),
@@ -140,11 +153,25 @@ class DiscountConfigCard extends StatelessWidget {
                     children: [
                       Expanded(
                         child: OutlinedButton.icon(
-                          onPressed: onSavePreset,
+                          onPressed: selectedPreset == null ? onSavePreset : null,
                           icon: const Icon(Icons.save),
                           label: Text(l10n.saveCurrentValues),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: selectedPreset == null 
+                                ? null 
+                                : Theme.of(context).colorScheme.outline,
+                          ),
                         ),
                       ),
+                      const SizedBox(width: 8),
+                      if (selectedPreset != null)
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: () => onEditPreset(selectedPreset!),
+                            icon: const Icon(Icons.edit),
+                            label: Text(l10n.editPreset),
+                          ),
+                        ),
                       const SizedBox(width: 8),
                       if (selectedPreset != null)
                         Expanded(
