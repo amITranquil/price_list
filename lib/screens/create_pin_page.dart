@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import '/utils/database_helper.dart';
-import 'price_calculator_screen.dart'; // PriceCalculatorScreen import edin
+import 'price_calculator_screen.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../services/validation_service.dart';
+import '../services/error_handling_service.dart';
+import '../di/injection.dart';
 
 class CreatePinPage extends StatefulWidget {
   final Function(Locale)? onLanguageChange;
@@ -15,20 +18,54 @@ class CreatePinPage extends StatefulWidget {
 class CreatePinPageState extends State<CreatePinPage> {
   final TextEditingController _pinController = TextEditingController();
   final TextEditingController _confirmPinController = TextEditingController();
+  final ValidationService _validationService = getIt<ValidationService>();
+  final ErrorHandlingService _errorHandlingService = getIt<ErrorHandlingService>();
 
   void _createPin() async {
     final pin = _pinController.text;
     final confirmPin = _confirmPinController.text;
 
-    if (pin == confirmPin) {
-      await DatabaseHelper().setPinCode(pin);
-      if (!mounted) return;
-
-      // PIN kodu başarıyla oluşturulduktan sonra PriceCalculatorScreen'e geç
-      Navigator.pushReplacement(
+    // Validate PIN
+    final pinValidation = _validationService.validatePinCode(pin);
+    if (!pinValidation.isValid) {
+      _errorHandlingService.showErrorSnackBar(
         context,
-        MaterialPageRoute(builder: (context) => PriceCalculatorScreen(onLanguageChange: widget.onLanguageChange)),
+        ErrorFactory.validationError(
+          pinValidation.errorMessage!,
+          pinValidation.localizedErrorKey
+        )
       );
+      return;
+    }
+
+    // Validate confirmation PIN
+    final confirmPinValidation = _validationService.validatePinCode(confirmPin);
+    if (!confirmPinValidation.isValid) {
+      _errorHandlingService.showErrorSnackBar(
+        context,
+        ErrorFactory.validationError(
+          confirmPinValidation.errorMessage!,
+          confirmPinValidation.localizedErrorKey
+        )
+      );
+      return;
+    }
+
+    if (pin == confirmPin) {
+      try {
+        await DatabaseHelper().setPinCode(pin);
+        if (!mounted) return;
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => PriceCalculatorScreen(onLanguageChange: widget.onLanguageChange)),
+        );
+      } catch (e, stackTrace) {
+        _errorHandlingService.showErrorSnackBar(
+          context,
+          ErrorFactory.storageError('Failed to save PIN: ${e.toString()}', e, stackTrace)
+        );
+      }
     } else {
       final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(

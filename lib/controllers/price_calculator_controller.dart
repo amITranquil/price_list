@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../services/exchange_rate_service.dart';
 import '../services/price_calculation_service.dart';
 import '../services/authentication_service.dart';
+import '../services/validation_service.dart';
+import '../services/error_handling_service.dart';
 import '../repositories/discount_preset_repository.dart';
 import '../repositories/calculation_record_repository.dart';
 import '../models/discount_preset.dart';
@@ -13,6 +15,8 @@ class PriceCalculatorController extends ChangeNotifier {
   final ExchangeRateService _exchangeRateService = getIt<ExchangeRateService>();
   final PriceCalculationService _priceCalculationService = getIt<PriceCalculationService>();
   final AuthenticationService _authService = getIt<AuthenticationService>();
+  final ValidationService _validationService = getIt<ValidationService>();
+  final ErrorHandlingService _errorHandlingService = getIt<ErrorHandlingService>();
   final DiscountPresetRepository _presetRepository = getIt<DiscountPresetRepository>();
   final CalculationRecordRepository _recordRepository = getIt<CalculationRecordRepository>();
 
@@ -126,37 +130,80 @@ class PriceCalculatorController extends ChangeNotifier {
   }
 
   Future<void> calculatePrice() async {
-    if (priceController.text.isEmpty || _exchangeRates == null) {
-      return;
+    try {
+      // Validate price input
+      final priceValidation = _validationService.validatePrice(priceController.text);
+      if (!priceValidation.isValid) {
+        _errorHandlingService.handleError(ErrorFactory.validationError(
+          priceValidation.errorMessage!, 
+          priceValidation.localizedErrorKey
+        ));
+        return;
+      }
+
+      // Validate exchange rates are available
+      if (_exchangeRates == null) {
+        _errorHandlingService.handleError(ErrorFactory.networkError('Exchange rates not available'));
+        return;
+      }
+
+      final originalPrice = double.parse(priceController.text);
+      final exchangeRate = _selectedCurrency == 'USD' 
+          ? _exchangeRates!.usdRate 
+          : _exchangeRates!.eurRate;
+      
+      if (exchangeRate == null) {
+        _errorHandlingService.handleError(ErrorFactory.networkError('Selected currency rate not available'));
+        return;
+      }
+
+      // Validate discount percentages
+      final discountRates = <double>[];
+      for (final controller in [discount1Controller, discount2Controller, discount3Controller]) {
+        if (controller.text.isNotEmpty) {
+          final validation = _validationService.validatePercentage(controller.text);
+          if (!validation.isValid) {
+            _errorHandlingService.handleError(ErrorFactory.validationError(
+              validation.errorMessage!, 
+              validation.localizedErrorKey
+            ));
+            return;
+          }
+          discountRates.add(double.parse(controller.text));
+        } else {
+          discountRates.add(0.0);
+        }
+      }
+
+      // Validate profit margin
+      final profitValidation = _validationService.validatePercentage(profitController.text);
+      if (!profitValidation.isValid) {
+        _errorHandlingService.handleError(ErrorFactory.validationError(
+          profitValidation.errorMessage!, 
+          profitValidation.localizedErrorKey
+        ));
+        return;
+      }
+
+      final profitMargin = double.parse(profitController.text);
+
+      final request = PriceCalculationRequest(
+        originalPrice: originalPrice,
+        exchangeRate: exchangeRate,
+        currency: _selectedCurrency,
+        discountRates: discountRates,
+        profitMargin: profitMargin,
+      );
+
+      _calculationResult = _priceCalculationService.calculatePrice(request);
+      notifyListeners();
+    } catch (e, stackTrace) {
+      _errorHandlingService.handleError(ErrorFactory.calculationError(
+        'Failed to calculate price: ${e.toString()}',
+        e,
+        stackTrace
+      ));
     }
-
-    final originalPrice = double.tryParse(priceController.text);
-    if (originalPrice == null) return;
-
-    final exchangeRate = _selectedCurrency == 'USD' 
-        ? _exchangeRates!.usdRate 
-        : _exchangeRates!.eurRate;
-    
-    if (exchangeRate == null) return;
-
-    final discountRates = [
-      double.tryParse(discount1Controller.text) ?? 0.0,
-      double.tryParse(discount2Controller.text) ?? 0.0,
-      double.tryParse(discount3Controller.text) ?? 0.0,
-    ];
-
-    final profitMargin = double.tryParse(profitController.text) ?? 40.0;
-
-    final request = PriceCalculationRequest(
-      originalPrice: originalPrice,
-      exchangeRate: exchangeRate,
-      currency: _selectedCurrency,
-      discountRates: discountRates,
-      profitMargin: profitMargin,
-    );
-
-    _calculationResult = _priceCalculationService.calculatePrice(request);
-    notifyListeners();
   }
 
   Future<void> togglePriceVisibility() async {
@@ -172,22 +219,38 @@ class PriceCalculatorController extends ChangeNotifier {
   }
 
   Future<void> savePreset() async {
-    if (presetLabelController.text.isEmpty) return;
+    try {
+      // Validate preset label
+      final labelValidation = _validationService.validatePresetLabel(presetLabelController.text);
+      if (!labelValidation.isValid) {
+        _errorHandlingService.handleError(ErrorFactory.validationError(
+          labelValidation.errorMessage!, 
+          labelValidation.localizedErrorKey
+        ));
+        return;
+      }
 
-    final preset = DiscountPreset(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      label: presetLabelController.text,
-      discounts: [
-        double.tryParse(discount1Controller.text) ?? 0.0,
-        double.tryParse(discount2Controller.text) ?? 0.0,
-        double.tryParse(discount3Controller.text) ?? 0.0,
-      ],
-      profitMargin: double.tryParse(profitController.text) ?? 40.0,
-    );
+      final preset = DiscountPreset(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        label: presetLabelController.text,
+        discounts: [
+          double.tryParse(discount1Controller.text) ?? 0.0,
+          double.tryParse(discount2Controller.text) ?? 0.0,
+          double.tryParse(discount3Controller.text) ?? 0.0,
+        ],
+        profitMargin: double.tryParse(profitController.text) ?? 40.0,
+      );
 
-    await _presetRepository.saveDiscountPreset(preset);
-    await _loadPresets();
-    presetLabelController.clear();
+      await _presetRepository.saveDiscountPreset(preset);
+      await _loadPresets();
+      presetLabelController.clear();
+    } catch (e, stackTrace) {
+      _errorHandlingService.handleError(ErrorFactory.storageError(
+        'Failed to save preset: ${e.toString()}',
+        e,
+        stackTrace
+      ));
+    }
   }
 
   Future<void> deletePreset() async {
@@ -199,25 +262,48 @@ class PriceCalculatorController extends ChangeNotifier {
   }
 
   Future<void> saveCalculationRecord() async {
-    if (_calculationResult == null || productNameController.text.isEmpty) {
-      return;
+    try {
+      // Validate calculation result exists
+      if (_calculationResult == null) {
+        _errorHandlingService.handleError(ErrorFactory.validationError(
+          'No calculation result available',
+          'calculationRequired'
+        ));
+        return;
+      }
+
+      // Validate product name
+      final nameValidation = _validationService.validateProductName(productNameController.text);
+      if (!nameValidation.isValid) {
+        _errorHandlingService.handleError(ErrorFactory.validationError(
+          nameValidation.errorMessage!, 
+          nameValidation.localizedErrorKey
+        ));
+        return;
+      }
+
+      final record = CalculationRecord(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        productName: productNameController.text,
+        originalPrice: double.tryParse(priceController.text) ?? 0.0,
+        exchangeRate: _selectedCurrency == 'USD' 
+            ? (_exchangeRates?.usdRate ?? 0.0)
+            : (_exchangeRates?.eurRate ?? 0.0),
+        discountRate: _calculationResult!.totalDiscountRate,
+        finalPrice: _calculationResult!.finalPriceWithVat,
+        createdAt: DateTime.now(),
+        notes: notesController.text.isEmpty ? null : notesController.text,
+      );
+
+      await _recordRepository.saveCalculationRecord(record);
+      productNameController.clear();
+      notesController.clear();
+    } catch (e, stackTrace) {
+      _errorHandlingService.handleError(ErrorFactory.storageError(
+        'Failed to save calculation record: ${e.toString()}',
+        e,
+        stackTrace
+      ));
     }
-
-    final record = CalculationRecord(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      productName: productNameController.text,
-      originalPrice: double.tryParse(priceController.text) ?? 0.0,
-      exchangeRate: _selectedCurrency == 'USD' 
-          ? (_exchangeRates?.usdRate ?? 0.0)
-          : (_exchangeRates?.eurRate ?? 0.0),
-      discountRate: _calculationResult!.totalDiscountRate,
-      finalPrice: _calculationResult!.finalPriceWithVat,
-      createdAt: DateTime.now(),
-      notes: notesController.text.isEmpty ? null : notesController.text,
-    );
-
-    await _recordRepository.saveCalculationRecord(record);
-    productNameController.clear();
-    notesController.clear();
   }
 }
