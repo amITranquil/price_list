@@ -10,6 +10,9 @@ import '../../models/discount_preset.dart';
 import '../../models/calculation_record.dart';
 import '../../di/injection.dart';
 import '../usecases/usecase.dart';
+import '../constants/app_constants.dart';
+import '../utils/logger.dart';
+import '../extensions/string_extensions.dart';
 
 // Clean Architecture Provider with proper separation of concerns
 class CleanArchitectureProvider extends ChangeNotifier {
@@ -74,62 +77,85 @@ class CleanArchitectureProvider extends ChangeNotifier {
 
   // Use Cases (Application Layer)
   Future<Result<PriceCalculationResult>> calculatePriceUseCase(BuildContext context) async {
-    try {
-      // Domain layer validation
-      final priceValidation = _validationService.validatePrice(priceController.text);
-      if (!priceValidation.isValid) {
-        return Result.error(priceValidation.errorMessage!);
-      }
+    return LoggingUtils.timeFunctionAsync('Price Calculation Use Case', () async {
+      try {
+        Logger.business('Starting price calculation', data: {
+          'originalPrice': priceController.text,
+          'currency': _selectedCurrency,
+          'discounts': [discount1Controller.text, discount2Controller.text, discount3Controller.text],
+          'profitMargin': profitController.text,
+        });
 
-      if (_exchangeRates == null) {
-        return Result.error('Exchange rates not available');
-      }
-
-      final originalPrice = double.parse(priceController.text);
-      final exchangeRate = _selectedCurrency == 'USD' 
-          ? _exchangeRates!.usdRate 
-          : _exchangeRates!.eurRate;
-      
-      if (exchangeRate == null) {
-        return Result.error('Selected currency rate not available');
-      }
-
-      // Validate discount percentages
-      final discountRates = <double>[];
-      for (final controller in [discount1Controller, discount2Controller, discount3Controller]) {
-        if (controller.text.isNotEmpty) {
-          final validation = _validationService.validatePercentage(controller.text);
-          if (!validation.isValid) {
-            return Result.error(validation.errorMessage!);
-          }
-          discountRates.add(double.parse(controller.text));
-        } else {
-          discountRates.add(0.0);
+        // Domain layer validation
+        final priceValidation = _validationService.validatePrice(priceController.text);
+        if (!priceValidation.isValid) {
+          Logger.validation('originalPrice', 'invalid', value: priceController.text);
+          return Result.error(priceValidation.errorMessage!);
         }
+
+        if (_exchangeRates == null) {
+          logError('Exchange rates not available for calculation');
+          return Result.error('Exchange rates not available');
+        }
+
+        final originalPrice = priceController.text.toDoubleOrDefault();
+        final exchangeRate = _selectedCurrency == 'USD' 
+            ? _exchangeRates!.usdRate 
+            : _exchangeRates!.eurRate;
+        
+        if (exchangeRate == null) {
+          logError('Selected currency rate not available: $_selectedCurrency');
+          return Result.error('Selected currency rate not available');
+        }
+
+        // Validate discount percentages
+        final discountRates = <double>[];
+        for (int i = 0; i < 3; i++) {
+          final controller = [discount1Controller, discount2Controller, discount3Controller][i];
+          if (controller.text.isNotNullOrEmpty) {
+            final validation = _validationService.validatePercentage(controller.text);
+            if (!validation.isValid) {
+              Logger.validation('discount${i + 1}', 'invalid', value: controller.text);
+              return Result.error(validation.errorMessage!);
+            }
+            discountRates.add(controller.text.toDoubleOrDefault());
+          } else {
+            discountRates.add(0.0);
+          }
+        }
+
+        // Validate profit margin
+        final profitValidation = _validationService.validatePercentage(profitController.text);
+        if (!profitValidation.isValid) {
+          Logger.validation('profitMargin', 'invalid', value: profitController.text);
+          return Result.error(profitValidation.errorMessage!);
+        }
+
+        final profitMargin = profitController.text.toDoubleOrDefault(AppConstants.defaultProfitMargin);
+
+        // Domain layer business logic
+        final request = PriceCalculationRequest(
+          originalPrice: originalPrice,
+          exchangeRate: exchangeRate,
+          currency: _selectedCurrency,
+          discountRates: discountRates,
+          profitMargin: profitMargin,
+        );
+
+        final result = _priceCalculationService.calculatePrice(request);
+        
+        Logger.business('Price calculation completed successfully', data: {
+          'finalPriceWithVat': result.finalPriceWithVat,
+          'totalDiscountRate': result.totalDiscountRate,
+          'salePriceWithProfit': result.salePriceWithProfit,
+        });
+
+        return Result.success(result);
+      } catch (e, stackTrace) {
+        logError('Price calculation failed', error: e, stackTrace: stackTrace);
+        return Result.error('Failed to calculate price: ${e.toString()}');
       }
-
-      // Validate profit margin
-      final profitValidation = _validationService.validatePercentage(profitController.text);
-      if (!profitValidation.isValid) {
-        return Result.error(profitValidation.errorMessage!);
-      }
-
-      final profitMargin = double.parse(profitController.text);
-
-      // Domain layer business logic
-      final request = PriceCalculationRequest(
-        originalPrice: originalPrice,
-        exchangeRate: exchangeRate,
-        currency: _selectedCurrency,
-        discountRates: discountRates,
-        profitMargin: profitMargin,
-      );
-
-      final result = _priceCalculationService.calculatePrice(request);
-      return Result.success(result);
-    } catch (e) {
-      return Result.error('Failed to calculate price: ${e.toString()}');
-    }
+    });
   }
 
   Future<Result<ExchangeRates>> fetchExchangeRatesUseCase({bool useDirectScraping = true}) async {
@@ -376,12 +402,18 @@ class CleanArchitectureProvider extends ChangeNotifier {
 
   // Initialization
   Future<void> initialize() async {
-    await Future.wait([
-      loadPresets(),
-      fetchExchangeRates(),
-    ]);
+    logInfo('Initializing Clean Architecture Provider');
     
-    profitController.text = '40';
-    notifyListeners();
+    await LoggingUtils.timeFunctionAsync('Provider Initialization', () async {
+      await Future.wait([
+        loadPresets(),
+        fetchExchangeRates(),
+      ]);
+      
+      profitController.text = AppConstants.defaultProfitMargin.toString();
+      notifyListeners();
+    });
+    
+    logInfo('Clean Architecture Provider initialized successfully');
   }
 }
