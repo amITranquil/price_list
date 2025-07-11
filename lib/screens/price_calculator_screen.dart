@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import '../controllers/price_calculator_controller.dart';
+import 'package:provider/provider.dart';
+import '../providers/price_calculator_provider.dart';
 import '../widgets/exchange_rate_card.dart';
 import '../widgets/pricing_input_card.dart';
 import '../widgets/discount_config_card.dart';
@@ -18,143 +19,134 @@ class PriceCalculatorScreen extends StatefulWidget {
 }
 
 class _PriceCalculatorScreenState extends State<PriceCalculatorScreen> {
-  late PriceCalculatorController _controller;
-
   @override
   void initState() {
     super.initState();
-    _controller = PriceCalculatorController();
-    _controller.addListener(_onControllerChanged);
-    _controller.initialize();
-  }
-
-  @override
-  void dispose() {
-    _controller.removeListener(_onControllerChanged);
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _onControllerChanged() {
-    setState(() {});
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<PriceCalculatorProvider>().initialize();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.appTitle),
-        elevation: 0,
-        actions: [
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert),
-            onSelected: (value) {
-              switch (value) {
-                case 'update_pin':
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const UpdatePinPage(),
+    return Consumer<PriceCalculatorProvider>(
+      builder: (context, provider, child) {
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(l10n.appTitle),
+            elevation: 0,
+            actions: [
+              PopupMenuButton<String>(
+                icon: const Icon(Icons.more_vert),
+                onSelected: (value) {
+                  switch (value) {
+                    case 'update_pin':
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const UpdatePinPage(),
+                        ),
+                      );
+                      break;
+                    case 'language':
+                      _showLanguageDialog();
+                      break;
+                  }
+                },
+                itemBuilder: (context) => [
+                  if (provider.authState.hasPinCode)
+                    PopupMenuItem(
+                      value: 'update_pin',
+                      child: Row(
+                        children: [
+                          const Icon(Icons.lock),
+                          const SizedBox(width: 8),
+                          Text(l10n.updatePin),
+                        ],
+                      ),
                     ),
-                  );
-                  break;
-                case 'language':
-                  _showLanguageDialog();
-                  break;
-              }
-            },
-            itemBuilder: (context) => [
-              if (_controller.pinCode != null)
-                PopupMenuItem(
-                  value: 'update_pin',
-                  child: Row(
-                    children: [
-                      const Icon(Icons.lock),
-                      const SizedBox(width: 8),
-                      Text(l10n.updatePin),
-                    ],
+                  PopupMenuItem(
+                    value: 'language',
+                    child: Row(
+                      children: [
+                        const Icon(Icons.language),
+                        const SizedBox(width: 8),
+                        Text(l10n.language),
+                      ],
+                    ),
                   ),
-                ),
-              PopupMenuItem(
-                value: 'language',
-                child: Row(
-                  children: [
-                    const Icon(Icons.language),
-                    const SizedBox(width: 8),
-                    Text(l10n.language),
-                  ],
-                ),
+                ],
               ),
             ],
           ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Exchange Rate Card
-            ExchangeRateCard(
-              exchangeRates: _controller.exchangeRates,
-              isLoading: _controller.isLoadingRates,
-              onRefresh: () => _controller.fetchExchangeRates(),
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Exchange Rate Card
+                ExchangeRateCard(
+                  exchangeRates: provider.exchangeRateState.exchangeRates,
+                  isLoading: provider.exchangeRateState.isLoading,
+                  onRefresh: () => provider.fetchExchangeRates(),
+                ),
+                const SizedBox(height: 16),
+                
+                // Pricing Input Card
+                PricingInputCard(
+                  priceController: provider.priceController,
+                  selectedCurrency: provider.uiState.selectedCurrency,
+                  presets: provider.presetState.presets,
+                  selectedPreset: provider.presetState.selectedPreset,
+                  onCurrencyChanged: provider.selectCurrency,
+                  onPresetChanged: provider.selectPreset,
+                ),
+                const SizedBox(height: 16),
+                
+                // Discount Configuration Card
+                DiscountConfigCard(
+                  discount1Controller: provider.discount1Controller,
+                  discount2Controller: provider.discount2Controller,
+                  discount3Controller: provider.discount3Controller,
+                  profitController: provider.profitController,
+                  isExpanded: provider.uiState.isAdvancedExpanded,
+                  onToggleExpanded: provider.toggleAdvancedExpanded,
+                  onSavePreset: _showSavePresetDialog,
+                  onDeletePreset: () => provider.deletePreset(context),
+                  presets: provider.presetState.presets,
+                  selectedPreset: provider.presetState.selectedPreset,
+                ),
+                const SizedBox(height: 16),
+                
+                // Calculate Button
+                FilledButton(
+                  onPressed: () => provider.calculatePrice(context),
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  child: Text(
+                    l10n.calculatePrice,
+                    style: const TextStyle(fontSize: 18),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                
+                // Calculation Results Card
+                CalculationResultsCard(
+                  result: provider.calculationState.result,
+                  pinCode: provider.authState.hasPinCode ? 'exists' : null,
+                  showPrices: provider.uiState.showPrices,
+                  onTogglePriceVisibility: provider.togglePriceVisibility,
+                  onSaveRecord: _showSaveRecordDialog,
+                  onShowRecords: _navigateToRecords,
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
-            
-            // Pricing Input Card
-            PricingInputCard(
-              priceController: _controller.priceController,
-              selectedCurrency: _controller.selectedCurrency,
-              presets: _controller.presets,
-              selectedPreset: _controller.selectedPreset,
-              onCurrencyChanged: _controller.selectCurrency,
-              onPresetChanged: _controller.selectPreset,
-            ),
-            const SizedBox(height: 16),
-            
-            // Discount Configuration Card
-            DiscountConfigCard(
-              discount1Controller: _controller.discount1Controller,
-              discount2Controller: _controller.discount2Controller,
-              discount3Controller: _controller.discount3Controller,
-              profitController: _controller.profitController,
-              isExpanded: _controller.isAdvancedExpanded,
-              onToggleExpanded: _controller.toggleAdvancedExpanded,
-              onSavePreset: _showSavePresetDialog,
-              onDeletePreset: _controller.deletePreset,
-              presets: _controller.presets,
-              selectedPreset: _controller.selectedPreset,
-            ),
-            const SizedBox(height: 16),
-            
-            // Calculate Button
-            FilledButton(
-              onPressed: _controller.calculatePrice,
-              style: FilledButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-              ),
-              child: Text(
-                l10n.calculatePrice,
-                style: const TextStyle(fontSize: 18),
-              ),
-            ),
-            const SizedBox(height: 16),
-            
-            // Calculation Results Card
-            CalculationResultsCard(
-              result: _controller.calculationResult,
-              pinCode: _controller.pinCode,
-              showPrices: _controller.showPrices,
-              onTogglePriceVisibility: _controller.togglePriceVisibility,
-              onSaveRecord: _showSaveRecordDialog,
-              onShowRecords: _navigateToRecords,
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -190,13 +182,14 @@ class _PriceCalculatorScreenState extends State<PriceCalculatorScreen> {
 
   void _showSavePresetDialog() {
     final l10n = AppLocalizations.of(context)!;
+    final provider = context.read<PriceCalculatorProvider>();
     
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(l10n.saveCurrentSettings),
         content: TextField(
-          controller: _controller.presetLabelController,
+          controller: provider.presetLabelController,
           decoration: InputDecoration(
             labelText: l10n.presetName,
             hintText: l10n.presetNameHint,
@@ -209,7 +202,7 @@ class _PriceCalculatorScreenState extends State<PriceCalculatorScreen> {
           ),
           TextButton(
             onPressed: () {
-              _controller.savePreset();
+              provider.savePreset(context);
               Navigator.pop(context);
             },
             child: Text(l10n.saveCurrentValues),
@@ -221,6 +214,7 @@ class _PriceCalculatorScreenState extends State<PriceCalculatorScreen> {
 
   void _showSaveRecordDialog() {
     final l10n = AppLocalizations.of(context)!;
+    final provider = context.read<PriceCalculatorProvider>();
     
     showDialog(
       context: context,
@@ -230,7 +224,7 @@ class _PriceCalculatorScreenState extends State<PriceCalculatorScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
-              controller: _controller.productNameController,
+              controller: provider.productNameController,
               decoration: InputDecoration(
                 labelText: l10n.productNameLabel,
                 hintText: l10n.productNameHint,
@@ -238,7 +232,7 @@ class _PriceCalculatorScreenState extends State<PriceCalculatorScreen> {
             ),
             const SizedBox(height: 16),
             TextField(
-              controller: _controller.notesController,
+              controller: provider.notesController,
               decoration: InputDecoration(
                 labelText: l10n.notesLabel,
                 hintText: l10n.notesHint,
@@ -254,7 +248,7 @@ class _PriceCalculatorScreenState extends State<PriceCalculatorScreen> {
           ),
           TextButton(
             onPressed: () {
-              _controller.saveCalculationRecord();
+              provider.saveCalculationRecord(context);
               Navigator.pop(context);
             },
             child: Text(l10n.saveCalculationButton),
