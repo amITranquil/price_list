@@ -1,7 +1,9 @@
 import '../models/discount_preset.dart';
+import '../models/calculation_record.dart';
 import '../repositories/discount_preset_repository.dart';
 import '../repositories/pin_repository.dart';
 import '../repositories/language_repository.dart';
+import '../repositories/calculation_record_repository.dart';
 import '../services/database_service.dart';
 
 class DatabaseHelper {
@@ -13,6 +15,7 @@ class DatabaseHelper {
   late final DiscountPresetRepository _discountPresetRepository;
   late final PinRepository _pinRepository;
   late final LanguageRepository _languageRepository;
+  late final CalculationRecordRepository _calculationRecordRepository;
 
   bool _initialized = false;
 
@@ -25,6 +28,7 @@ class DatabaseHelper {
     _discountPresetRepository = HiveDiscountPresetRepository(_databaseService);
     _pinRepository = HivePinRepository(_databaseService);
     _languageRepository = HiveLanguageRepository(_databaseService);
+    _calculationRecordRepository = HiveCalculationRecordRepository(_databaseService);
     
     _initialized = true;
   }
@@ -62,5 +66,25 @@ class DatabaseHelper {
   Future<void> setLanguageCode(String languageCode) async {
     if (!_initialized) await initDatabase();
     await _languageRepository.setLanguageCode(languageCode);
+  }
+
+  Future<void> saveCalculationRecord(CalculationRecord record) async {
+    if (!_initialized) await initDatabase();
+    await _calculationRecordRepository.saveCalculationRecord(record);
+  }
+
+  Future<List<CalculationRecord>> getCalculationRecords() async {
+    if (!_initialized) await initDatabase();
+    return await _calculationRecordRepository.getCalculationRecords();
+  }
+
+  Future<void> deleteCalculationRecord(String id) async {
+    if (!_initialized) await initDatabase();
+    await _calculationRecordRepository.deleteCalculationRecord(id);
+  }
+
+  Future<List<CalculationRecord>> searchCalculationRecords(String query) async {
+    if (!_initialized) await initDatabase();
+    return await _calculationRecordRepository.searchCalculationRecords(query);
   }
 }

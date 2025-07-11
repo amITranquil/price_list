@@ -5,8 +5,10 @@ import 'package:html/dom.dart' hide Text;
 import 'package:html/parser.dart';
 import '/utils/database_helper.dart';
 import '/models/discount_preset.dart';
+import '/models/calculation_record.dart';
 import 'create_pin_page.dart';
 import 'update_pin_page.dart';
+import 'calculation_records_screen.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 enum Currency { usd, eur, tl }
@@ -30,6 +32,8 @@ class PriceCalculatorScreenState extends State<PriceCalculatorScreen> {
   final TextEditingController _eurExchangeRateController = TextEditingController();
   final TextEditingController _pinController = TextEditingController();
   final TextEditingController _presetLabelController = TextEditingController();
+  final TextEditingController _productNameController = TextEditingController();
+  final TextEditingController _notesController = TextEditingController();
 
   List<DiscountPreset> _savedPresets = [];
   DiscountPreset? _selectedPreset;
@@ -391,6 +395,18 @@ class PriceCalculatorScreenState extends State<PriceCalculatorScreen> {
       appBar: AppBar(
         title: Text(l10n.appTitle),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.history),
+            tooltip: 'Hesap Kayıtları',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const CalculationRecordsScreen(),
+                ),
+              );
+            },
+          ),
           PopupMenuButton<String>(
             icon: const Icon(Icons.language),
             tooltip: l10n.language,
@@ -442,6 +458,8 @@ class PriceCalculatorScreenState extends State<PriceCalculatorScreen> {
             _buildCalculateButton(),
             const SizedBox(height: 16),
             if (_kdvPrice.isNotEmpty) _buildResultsCard(),
+            if (_kdvPrice.isNotEmpty) const SizedBox(height: 16),
+            if (_kdvPrice.isNotEmpty) _buildSaveCalculationCard(),
             const SizedBox(height: 16),
             _buildPresetManagementCard(),
             const SizedBox(height: 24),
@@ -796,6 +814,133 @@ class PriceCalculatorScreenState extends State<PriceCalculatorScreen> {
         ),
       ),
     );
+  }
+
+  Widget _buildSaveCalculationCard() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.save, color: Theme.of(context).colorScheme.primary),
+                const SizedBox(width: 8),
+                Text(
+                  'Hesabı Kaydet',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _productNameController,
+              decoration: InputDecoration(
+                labelText: 'Ürün Adı',
+                hintText: 'Hesapladığınız ürünün adını girin',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                prefixIcon: const Icon(Icons.shopping_bag),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _notesController,
+              decoration: InputDecoration(
+                labelText: 'Notlar (Opsiyonel)',
+                hintText: 'Ek bilgiler veya notlar',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                prefixIcon: const Icon(Icons.note),
+              ),
+              maxLines: 2,
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: _saveCalculation,
+                icon: const Icon(Icons.save),
+                label: const Text('Hesabı Kaydet'),
+                style: FilledButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _saveCalculation() async {
+    if (_productNameController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Ürün adı gerekli')),
+      );
+      return;
+    }
+
+    if (_kdvPrice.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Önce hesaplama yapmalısınız')),
+      );
+      return;
+    }
+
+    try {
+      final originalPrice = double.parse(_priceController.text.replaceAll(',', '.'));
+      final exchangeRate = _selectedCurrency == Currency.usd 
+          ? double.parse(_usdExchangeRateController.text.replaceAll(',', '.'))
+          : _selectedCurrency == Currency.eur
+          ? double.parse(_eurExchangeRateController.text.replaceAll(',', '.'))
+          : 1.0;
+
+      final discount1 = double.parse(_discountController1.text.replaceAll(',', '.')) / 100;
+      final discount2 = double.parse(_discountController2.text.replaceAll(',', '.')) / 100;
+      final discount3 = double.parse(_discountController3.text.replaceAll(',', '.')) / 100;
+      
+      // Kümülatif iskonto hesapla
+      final double discountedPrice1 = originalPrice * (1 - discount1);
+      final double discountedPrice2 = discountedPrice1 * (1 - discount2);
+      final double discountedPrice3 = discountedPrice2 * (1 - discount3);
+      final double totalDiscountRate = ((originalPrice - discountedPrice3) / originalPrice) * 100;
+
+      final finalPrice = double.parse(_kdvPrice.replaceAll('₺', '').replaceAll(',', '').replaceAll('.', '').trim()) / 100;
+
+      final record = CalculationRecord(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        productName: _productNameController.text.trim(),
+        originalPrice: originalPrice,
+        exchangeRate: exchangeRate,
+        discountRate: totalDiscountRate,
+        finalPrice: finalPrice,
+        createdAt: DateTime.now(),
+        notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
+      );
+
+      await DatabaseHelper().saveCalculationRecord(record);
+
+      _productNameController.clear();
+      _notesController.clear();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Hesap kaydedildi')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Kaydetme hatası: $e')),
+        );
+      }
+    }
   }
 
   Widget _buildResultsCard() {

@@ -5,14 +5,16 @@ import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:price_list/screens/price_calculator_screen.dart';
 import 'package:price_list/screens/create_pin_page.dart';
-import 'package:price_list/utils/database_helper.dart';
+import 'package:price_list/repositories/pin_repository.dart';
+import 'package:price_list/repositories/language_repository.dart';
+import 'package:price_list/di/injection.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Veritabanını başlat
-  await DatabaseHelper().initDatabase();
+  // Dependency injection kurulumu
+  await configureDependencies();
 
   if (kIsWeb || Platform.isAndroid || Platform.isIOS) {
     runApp(const MyApp());
@@ -53,7 +55,8 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> _loadLanguage() async {
-    final languageCode = await DatabaseHelper().getLanguageCode();
+    final languageRepository = getIt<LanguageRepository>();
+    final languageCode = await languageRepository.getLanguageCode();
     if (languageCode != null && mounted) {
       setState(() {
         _locale = Locale(languageCode);
@@ -65,7 +68,8 @@ class _MyAppState extends State<MyApp> {
     setState(() {
       _locale = locale;
     });
-    DatabaseHelper().setLanguageCode(locale.languageCode);
+    final languageRepository = getIt<LanguageRepository>();
+    languageRepository.setLanguageCode(locale.languageCode);
   }
 
   @override
@@ -145,7 +149,8 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<bool> _checkPinStatus() async {
-    final storedPin = await DatabaseHelper().getPinCode();
+    final pinRepository = getIt<PinRepository>();
+    final storedPin = await pinRepository.getPinCode();
     return storedPin != null;
   }
 }

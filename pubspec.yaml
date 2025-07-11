@@ -40,6 +40,9 @@ dependencies:
   path: ^1.9.0
   hive: ^2.2.0
   hive_flutter: ^1.1.0
+  file_picker: ^6.1.1
+  get_it: ^7.6.4
+  injectable: ^2.3.2
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -56,6 +59,8 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^2.0.0
+  injectable_generator: ^2.4.1
+  build_runner: ^2.4.7
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
