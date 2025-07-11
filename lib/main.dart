@@ -8,7 +8,7 @@ import 'package:price_list/screens/price_calculator_screen.dart';
 import 'package:price_list/screens/create_pin_page.dart';
 import 'package:price_list/repositories/pin_repository.dart';
 import 'package:price_list/repositories/language_repository.dart';
-import 'package:price_list/providers/price_calculator_provider.dart';
+import 'package:price_list/core/architecture/clean_architecture_provider.dart';
 import 'package:price_list/di/injection.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -79,7 +79,7 @@ class _MyAppState extends State<MyApp> {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
-          create: (context) => PriceCalculatorProvider(),
+          create: (context) => getIt<CleanArchitectureProvider>(),
         ),
       ],
       child: MaterialApp(

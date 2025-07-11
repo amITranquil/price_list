@@ -10,6 +10,7 @@ import '../repositories/pin_repository.dart';
 import '../repositories/language_repository.dart';
 import '../repositories/discount_preset_repository.dart';
 import '../repositories/calculation_record_repository.dart';
+import '../core/architecture/clean_architecture_provider.dart';
 
 final getIt = GetIt.instance;
 
@@ -34,6 +35,9 @@ Future<void> configureDependencies() async {
   getIt.registerLazySingleton<AuthenticationService>(() => PinAuthenticationService(getIt<PinRepository>()));
   getIt.registerLazySingleton<ValidationService>(() => StandardValidationService());
   getIt.registerLazySingleton<ErrorHandlingService>(() => StandardErrorHandlingService());
+  
+  // Clean Architecture Provider
+  getIt.registerLazySingleton<CleanArchitectureProvider>(() => CleanArchitectureProvider());
   
   // Initialize database
   await getIt<DatabaseService>().initDatabase();

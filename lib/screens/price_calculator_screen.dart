@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
-import '../providers/price_calculator_provider.dart';
+import '../core/architecture/clean_architecture_provider.dart';
 import '../widgets/exchange_rate_card.dart';
 import '../widgets/pricing_input_card.dart';
 import '../widgets/discount_config_card.dart';
@@ -23,7 +23,7 @@ class _PriceCalculatorScreenState extends State<PriceCalculatorScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<PriceCalculatorProvider>().initialize();
+      context.read<CleanArchitectureProvider>().initialize();
     });
   }
 
@@ -31,7 +31,7 @@ class _PriceCalculatorScreenState extends State<PriceCalculatorScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return Consumer<PriceCalculatorProvider>(
+    return Consumer<CleanArchitectureProvider>(
       builder: (context, provider, child) {
         return Scaffold(
           appBar: AppBar(
@@ -56,7 +56,7 @@ class _PriceCalculatorScreenState extends State<PriceCalculatorScreen> {
                   }
                 },
                 itemBuilder: (context) => [
-                  if (provider.authState.hasPinCode)
+                  if (provider.hasPinCode)
                     PopupMenuItem(
                       value: 'update_pin',
                       child: Row(
@@ -88,8 +88,8 @@ class _PriceCalculatorScreenState extends State<PriceCalculatorScreen> {
               children: [
                 // Exchange Rate Card
                 ExchangeRateCard(
-                  exchangeRates: provider.exchangeRateState.exchangeRates,
-                  isLoading: provider.exchangeRateState.isLoading,
+                  exchangeRates: provider.exchangeRates,
+                  isLoading: provider.isLoading,
                   onRefresh: () => provider.fetchExchangeRates(),
                 ),
                 const SizedBox(height: 16),
@@ -97,9 +97,9 @@ class _PriceCalculatorScreenState extends State<PriceCalculatorScreen> {
                 // Pricing Input Card
                 PricingInputCard(
                   priceController: provider.priceController,
-                  selectedCurrency: provider.uiState.selectedCurrency,
-                  presets: provider.presetState.presets,
-                  selectedPreset: provider.presetState.selectedPreset,
+                  selectedCurrency: provider.selectedCurrency,
+                  presets: provider.presets,
+                  selectedPreset: provider.selectedPreset,
                   onCurrencyChanged: provider.selectCurrency,
                   onPresetChanged: provider.selectPreset,
                 ),
@@ -111,12 +111,12 @@ class _PriceCalculatorScreenState extends State<PriceCalculatorScreen> {
                   discount2Controller: provider.discount2Controller,
                   discount3Controller: provider.discount3Controller,
                   profitController: provider.profitController,
-                  isExpanded: provider.uiState.isAdvancedExpanded,
+                  isExpanded: provider.isAdvancedExpanded,
                   onToggleExpanded: provider.toggleAdvancedExpanded,
                   onSavePreset: _showSavePresetDialog,
                   onDeletePreset: () => provider.deletePreset(context),
-                  presets: provider.presetState.presets,
-                  selectedPreset: provider.presetState.selectedPreset,
+                  presets: provider.presets,
+                  selectedPreset: provider.selectedPreset,
                 ),
                 const SizedBox(height: 16),
                 
@@ -135,9 +135,9 @@ class _PriceCalculatorScreenState extends State<PriceCalculatorScreen> {
                 
                 // Calculation Results Card
                 CalculationResultsCard(
-                  result: provider.calculationState.result,
-                  pinCode: provider.authState.hasPinCode ? 'exists' : null,
-                  showPrices: provider.uiState.showPrices,
+                  result: provider.calculationResult,
+                  pinCode: provider.hasPinCode ? 'exists' : null,
+                  showPrices: provider.showPrices,
                   onTogglePriceVisibility: provider.togglePriceVisibility,
                   onSaveRecord: _showSaveRecordDialog,
                   onShowRecords: _navigateToRecords,
@@ -182,7 +182,7 @@ class _PriceCalculatorScreenState extends State<PriceCalculatorScreen> {
 
   void _showSavePresetDialog() {
     final l10n = AppLocalizations.of(context)!;
-    final provider = context.read<PriceCalculatorProvider>();
+    final provider = context.read<CleanArchitectureProvider>();
     
     showDialog(
       context: context,
@@ -214,7 +214,7 @@ class _PriceCalculatorScreenState extends State<PriceCalculatorScreen> {
 
   void _showSaveRecordDialog() {
     final l10n = AppLocalizations.of(context)!;
-    final provider = context.read<PriceCalculatorProvider>();
+    final provider = context.read<CleanArchitectureProvider>();
     
     showDialog(
       context: context,
