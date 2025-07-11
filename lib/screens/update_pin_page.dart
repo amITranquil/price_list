@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '/utils/database_helper.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class UpdatePinPage extends StatefulWidget {
   const UpdatePinPage({super.key});
@@ -17,6 +18,7 @@ class UpdatePinPageState extends State<UpdatePinPage> {
     final oldPin = _oldPinController.text;
     final newPin = _newPinController.text;
     final confirmNewPin = _confirmNewPinController.text;
+    final l10n = AppLocalizations.of(context)!;
 
     final storedPin = await DatabaseHelper().getPinCode();
 
@@ -24,7 +26,7 @@ class UpdatePinPageState extends State<UpdatePinPage> {
     if (oldPin != storedPin) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Eski PIN kodu yanlış!')),
+        SnackBar(content: Text(l10n.wrongOldPin)),
       );
       return;
     }
@@ -33,7 +35,7 @@ class UpdatePinPageState extends State<UpdatePinPage> {
     if (newPin == oldPin) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Yeni PIN kodu eski PIN kodu ile aynı olamaz!')),
+        SnackBar(content: Text(l10n.samePinError)),
       );
       return;
     }
@@ -46,16 +48,17 @@ class UpdatePinPageState extends State<UpdatePinPage> {
     } else {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Yeni PIN kodları uyuşmuyor!')),
+        SnackBar(content: Text(l10n.newPinMismatch)),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('PIN Kodu Güncelle'),
+        title: Text(l10n.updatePinTitle),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -65,28 +68,28 @@ class UpdatePinPageState extends State<UpdatePinPage> {
             TextField(
               controller: _oldPinController,
               obscureText: true,
-              decoration: const InputDecoration(
-                labelText: 'Eski PIN Kodu',
+              decoration: InputDecoration(
+                labelText: l10n.oldPinLabel,
               ),
             ),
             TextField(
               controller: _newPinController,
               obscureText: true,
-              decoration: const InputDecoration(
-                labelText: 'Yeni PIN Kodu',
+              decoration: InputDecoration(
+                labelText: l10n.newPinLabel,
               ),
             ),
             TextField(
               controller: _confirmNewPinController,
               obscureText: true,
-              decoration: const InputDecoration(
-                labelText: 'Yeni PIN Kodunu Onayla',
+              decoration: InputDecoration(
+                labelText: l10n.confirmNewPinLabel,
               ),
             ),
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: _updatePin,
-              child: const Text('PIN Kodu Güncelle'),
+              child: Text(l10n.updatePinButton),
             ),
           ],
         ),

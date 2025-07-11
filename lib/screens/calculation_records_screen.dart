@@ -54,7 +54,7 @@ class _CalculationRecordsScreenState extends State<CalculationRecordsScreen> {
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.recordsLoadError.replaceAll('{error}', e.toString()))),
+          SnackBar(content: Text(l10n.recordsLoadError(e.toString()))),
         );
       }
     }
@@ -88,7 +88,7 @@ class _CalculationRecordsScreenState extends State<CalculationRecordsScreen> {
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.deleteError.replaceAll('{error}', e.toString()))),
+          SnackBar(content: Text(l10n.deleteError(e.toString()))),
         );
       }
     }
@@ -100,7 +100,7 @@ class _CalculationRecordsScreenState extends State<CalculationRecordsScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(l10n.deleteRecordTitle),
-        content: Text(l10n.deleteConfirmation.replaceAll('{productName}', record.productName)),
+        content: Text(l10n.deleteConfirmation(record.productName)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -225,11 +225,11 @@ class _CalculationRecordsScreenState extends State<CalculationRecordsScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   const SizedBox(height: 4),
-                                  Text(l10n.originalPriceLabel.replaceAll('{price}', numberFormat.format(record.originalPrice))),
-                                  Text(l10n.exchangeRateLabel.replaceAll('{rate}', numberFormat.format(record.exchangeRate))),
-                                  Text(l10n.discountRateLabel.replaceAll('{rate}', numberFormat.format(record.discountRate))),
+                                  Text(l10n.originalPriceLabel(numberFormat.format(record.originalPrice))),
+                                  Text(l10n.exchangeRateLabel(numberFormat.format(record.exchangeRate))),
+                                  Text(l10n.discountRateLabel(numberFormat.format(record.discountRate))),
                                   Text(
-                                    l10n.finalPriceLabel.replaceAll('{price}', numberFormat.format(record.finalPrice)),
+                                    l10n.finalPriceLabel(numberFormat.format(record.finalPrice)),
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       color: Theme.of(context).colorScheme.primary,
@@ -238,7 +238,7 @@ class _CalculationRecordsScreenState extends State<CalculationRecordsScreen> {
                                   if (record.notes != null && record.notes!.isNotEmpty) ...[
                                     const SizedBox(height: 4),
                                     Text(
-                                      l10n.notesLabelRecord.replaceAll('{notes}', record.notes!),
+                                      l10n.notesLabelRecord(record.notes!),
                                       style: TextStyle(
                                         color: Theme.of(context).colorScheme.outline,
                                       ),
@@ -322,7 +322,7 @@ class _CalculationRecordsScreenState extends State<CalculationRecordsScreen> {
         final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(l10n.exportSuccess.replaceAll('{count}', records.length.toString())),
+            content: Text(l10n.exportSuccess(records.length.toString())),
             duration: const Duration(seconds: 3),
           ),
         );
@@ -331,7 +331,7 @@ class _CalculationRecordsScreenState extends State<CalculationRecordsScreen> {
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.exportError.replaceAll('{error}', e.toString()))),
+          SnackBar(content: Text(l10n.exportError(e.toString()))),
         );
       }
     }
@@ -356,7 +356,7 @@ class _CalculationRecordsScreenState extends State<CalculationRecordsScreen> {
           final l10n = AppLocalizations.of(context)!;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(l10n.fileSaved.replaceAll('{path}', file.path)),
+              content: Text(l10n.fileSaved(file.path)),
               duration: const Duration(seconds: 4),
             ),
           );
@@ -366,7 +366,7 @@ class _CalculationRecordsScreenState extends State<CalculationRecordsScreen> {
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.fileSaveError.replaceAll('{error}', e.toString()))),
+          SnackBar(content: Text(l10n.fileSaveError(e.toString()))),
         );
       }
     }
@@ -380,7 +380,7 @@ class _CalculationRecordsScreenState extends State<CalculationRecordsScreen> {
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.importError.replaceAll('{error}', e.toString()))),
+          SnackBar(content: Text(l10n.importError(e.toString()))),
         );
       }
     }
@@ -404,7 +404,7 @@ class _CalculationRecordsScreenState extends State<CalculationRecordsScreen> {
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.fileReadError.replaceAll('{error}', e.toString()))),
+          SnackBar(content: Text(l10n.fileReadError(e.toString()))),
         );
       }
     }
@@ -458,7 +458,7 @@ class _CalculationRecordsScreenState extends State<CalculationRecordsScreen> {
         final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(l10n.importSuccess.replaceAll('{count}', newRecords.length.toString())),
+            content: Text(l10n.importSuccess(newRecords.length.toString())),
             duration: const Duration(seconds: 3),
           ),
         );
@@ -467,7 +467,7 @@ class _CalculationRecordsScreenState extends State<CalculationRecordsScreen> {
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.importError.replaceAll('{error}', e.toString()))),
+          SnackBar(content: Text(l10n.importError(e.toString()))),
         );
       }
     }
@@ -618,7 +618,7 @@ class _CalculationDetailDialogState extends State<CalculationDetailDialog> {
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.updateError.replaceAll('{error}', e.toString()))),
+          SnackBar(content: Text(l10n.updateError(e.toString()))),
         );
       }
     }
@@ -628,6 +628,7 @@ class _CalculationDetailDialogState extends State<CalculationDetailDialog> {
   Widget build(BuildContext context) {
     final dateFormat = DateFormat('dd/MM/yyyy HH:mm');
     final numberFormat = NumberFormat('#,##0.00', 'tr_TR');
+    final l10n = AppLocalizations.of(context)!;
     
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),

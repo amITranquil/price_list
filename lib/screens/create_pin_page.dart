@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '/utils/database_helper.dart';
 import 'price_calculator_screen.dart'; // PriceCalculatorScreen import edin
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class CreatePinPage extends StatefulWidget {
   final Function(Locale)? onLanguageChange;
@@ -29,17 +30,19 @@ class CreatePinPageState extends State<CreatePinPage> {
         MaterialPageRoute(builder: (context) => PriceCalculatorScreen(onLanguageChange: widget.onLanguageChange)),
       );
     } else {
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('PIN kodları uyuşmuyor!')),
+        SnackBar(content: Text(l10n.pinMismatch)),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('PIN Kodu Oluştur'),
+        title: Text(l10n.createPinTitle),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -50,22 +53,22 @@ class CreatePinPageState extends State<CreatePinPage> {
               controller: _pinController,
               obscureText: true,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'Yeni PIN Kodu',
+              decoration: InputDecoration(
+                labelText: l10n.newPinLabel,
               ),
             ),
             TextField(
               controller: _confirmPinController,
               obscureText: true,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'PIN Kodunu Onayla',
+              decoration: InputDecoration(
+                labelText: l10n.confirmPinLabel,
               ),
             ),
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: _createPin,
-              child: const Text('PIN Kodu Oluştur'),
+              child: Text(l10n.createPinButton),
             ),
           ],
         ),
