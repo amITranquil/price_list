@@ -6,7 +6,9 @@ abstract class CalculationRecordRepository {
   Future<void> saveCalculationRecord(CalculationRecord record);
   Future<List<CalculationRecord>> getCalculationRecords();
   Future<void> deleteCalculationRecord(String id);
+  Future<void> updateCalculationRecord(CalculationRecord record);
   Future<List<CalculationRecord>> searchCalculationRecords(String query);
+  Future<bool> productNameExists(String productName);
 }
 
 class HiveCalculationRecordRepository implements CalculationRecordRepository {
@@ -27,6 +29,7 @@ class HiveCalculationRecordRepository implements CalculationRecordRepository {
       'finalPrice': record.finalPrice,
       'createdAt': record.createdAt.toIso8601String(),
       'notes': record.notes,
+      'currency': record.currency,
     });
     await box.put(record.id, recordJson);
   }
@@ -50,6 +53,7 @@ class HiveCalculationRecordRepository implements CalculationRecordRepository {
             finalPrice: data['finalPrice'].toDouble(),
             createdAt: DateTime.parse(data['createdAt']),
             notes: data['notes'],
+            currency: data['currency'] ?? 'USD',
           );
           records.add(record);
         } catch (e) {
@@ -71,6 +75,12 @@ class HiveCalculationRecordRepository implements CalculationRecordRepository {
   }
 
   @override
+  Future<void> updateCalculationRecord(CalculationRecord record) async {
+    // Update is same as save for this simple implementation
+    await saveCalculationRecord(record);
+  }
+
+  @override
   Future<List<CalculationRecord>> searchCalculationRecords(String query) async {
     final allRecords = await getCalculationRecords();
     
@@ -83,5 +93,12 @@ class HiveCalculationRecordRepository implements CalculationRecordRepository {
       return record.productName.toLowerCase().contains(lowerQuery) ||
              (record.notes?.toLowerCase().contains(lowerQuery) ?? false);
     }).toList();
+  }
+
+  @override
+  Future<bool> productNameExists(String productName) async {
+    final allRecords = await getCalculationRecords();
+    return allRecords.any((record) => 
+      record.productName.toLowerCase() == productName.toLowerCase());
   }
 }

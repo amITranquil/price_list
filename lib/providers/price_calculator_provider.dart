@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../services/exchange_rate_service.dart';
 import '../services/price_calculation_service.dart';
 import '../services/authentication_service.dart';
@@ -145,7 +146,7 @@ class PriceCalculatorProvider extends ChangeNotifier {
   Future<void> savePreset(BuildContext context) async {
     try {
       // Validate preset label
-      final labelValidation = _validationService.validatePresetLabel(presetLabelController.text);
+      final labelValidation = _validationService.validatePresetLabel(presetLabelController.text, l10n: AppLocalizations.of(context)!);
       if (!labelValidation.isValid) {
         if (context.mounted) {
           _errorHandlingService.showErrorSnackBar(
@@ -224,7 +225,7 @@ class PriceCalculatorProvider extends ChangeNotifier {
 
     try {
       // Validate price input
-      final priceValidation = _validationService.validatePrice(priceController.text);
+      final priceValidation = _validationService.validatePrice(priceController.text, l10n: AppLocalizations.of(context)!);
       if (!priceValidation.isValid) {
         _calculationState.setError(priceValidation.errorMessage!);
         _errorHandlingService.showErrorSnackBar(
@@ -265,7 +266,7 @@ class PriceCalculatorProvider extends ChangeNotifier {
       final discountRates = <double>[];
       for (final controller in [discount1Controller, discount2Controller, discount3Controller]) {
         if (controller.text.isNotEmpty) {
-          final validation = _validationService.validatePercentage(controller.text);
+          final validation = _validationService.validatePercentage(controller.text, l10n: AppLocalizations.of(context)!);
           if (!validation.isValid) {
             _calculationState.setError(validation.errorMessage!);
             _errorHandlingService.showErrorSnackBar(
@@ -284,7 +285,7 @@ class PriceCalculatorProvider extends ChangeNotifier {
       }
 
       // Validate profit margin
-      final profitValidation = _validationService.validatePercentage(profitController.text);
+      final profitValidation = _validationService.validatePercentage(profitController.text, l10n: AppLocalizations.of(context)!);
       if (!profitValidation.isValid) {
         _calculationState.setError(profitValidation.errorMessage!);
         _errorHandlingService.showErrorSnackBar(
@@ -338,15 +339,17 @@ class PriceCalculatorProvider extends ChangeNotifier {
       }
 
       // Validate product name
-      final nameValidation = _validationService.validateProductName(productNameController.text);
+      final nameValidation = await _validationService.validateUniqueProductName(productNameController.text, l10n: AppLocalizations.of(context)!);
       if (!nameValidation.isValid) {
-        _errorHandlingService.showErrorSnackBar(
-          context,
-          ErrorFactory.validationError(
-            nameValidation.errorMessage!,
-            nameValidation.localizedErrorKey
-          )
-        );
+        if (context.mounted) {
+          _errorHandlingService.showErrorSnackBar(
+            context,
+            ErrorFactory.validationError(
+              nameValidation.errorMessage!,
+              nameValidation.localizedErrorKey
+            )
+          );
+        }
         return;
       }
 
@@ -356,11 +359,14 @@ class PriceCalculatorProvider extends ChangeNotifier {
         originalPrice: double.tryParse(priceController.text) ?? 0.0,
         exchangeRate: _uiState.selectedCurrency == 'USD' 
             ? (_exchangeRateState.exchangeRates?.usdRate ?? 0.0)
-            : (_exchangeRateState.exchangeRates?.eurRate ?? 0.0),
+            : _uiState.selectedCurrency == 'EUR'
+                ? (_exchangeRateState.exchangeRates?.eurRate ?? 0.0)
+                : 1.0,
         discountRate: _calculationState.result!.totalDiscountRate,
         finalPrice: _calculationState.result!.finalPriceWithVat,
         createdAt: DateTime.now(),
         notes: notesController.text.isEmpty ? null : notesController.text,
+        currency: _uiState.selectedCurrency,
       );
 
       await _recordRepository.saveCalculationRecord(record);

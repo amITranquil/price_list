@@ -46,7 +46,7 @@ class UpdatePinPageState extends State<UpdatePinPage> {
       await provider.setPinCode(newPin);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('PIN kodu başarıyla güncellendi')),
+        SnackBar(content: Text(l10n.pinUpdatedSuccessfully)),
       );
       Navigator.pop(context);
     } else {

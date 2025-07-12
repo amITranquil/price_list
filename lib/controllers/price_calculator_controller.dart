@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../services/exchange_rate_service.dart';
 import '../services/price_calculation_service.dart';
 import '../services/authentication_service.dart';
@@ -127,10 +128,10 @@ class PriceCalculatorController extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> calculatePrice() async {
+  Future<void> calculatePrice({AppLocalizations? l10n}) async {
     try {
       // Validate price input
-      final priceValidation = _validationService.validatePrice(priceController.text);
+      final priceValidation = _validationService.validatePrice(priceController.text, l10n: l10n);
       if (!priceValidation.isValid) {
         _errorHandlingService.handleError(ErrorFactory.validationError(
           priceValidation.errorMessage!, 
@@ -159,7 +160,7 @@ class PriceCalculatorController extends ChangeNotifier {
       final discountRates = <double>[];
       for (final controller in [discount1Controller, discount2Controller, discount3Controller]) {
         if (controller.text.isNotEmpty) {
-          final validation = _validationService.validatePercentage(controller.text);
+          final validation = _validationService.validatePercentage(controller.text, l10n: l10n);
           if (!validation.isValid) {
             _errorHandlingService.handleError(ErrorFactory.validationError(
               validation.errorMessage!, 
@@ -174,7 +175,7 @@ class PriceCalculatorController extends ChangeNotifier {
       }
 
       // Validate profit margin
-      final profitValidation = _validationService.validatePercentage(profitController.text);
+      final profitValidation = _validationService.validatePercentage(profitController.text, l10n: l10n);
       if (!profitValidation.isValid) {
         _errorHandlingService.handleError(ErrorFactory.validationError(
           profitValidation.errorMessage!, 
@@ -216,10 +217,10 @@ class PriceCalculatorController extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> savePreset() async {
+  Future<void> savePreset({AppLocalizations? l10n}) async {
     try {
       // Validate preset label
-      final labelValidation = _validationService.validatePresetLabel(presetLabelController.text);
+      final labelValidation = _validationService.validatePresetLabel(presetLabelController.text, l10n: l10n);
       if (!labelValidation.isValid) {
         _errorHandlingService.handleError(ErrorFactory.validationError(
           labelValidation.errorMessage!, 
@@ -259,7 +260,7 @@ class PriceCalculatorController extends ChangeNotifier {
     await _loadPresets();
   }
 
-  Future<void> saveCalculationRecord() async {
+  Future<void> saveCalculationRecord({AppLocalizations? l10n}) async {
     try {
       // Validate calculation result exists
       if (_calculationResult == null) {
@@ -271,7 +272,7 @@ class PriceCalculatorController extends ChangeNotifier {
       }
 
       // Validate product name
-      final nameValidation = _validationService.validateProductName(productNameController.text);
+      final nameValidation = await _validationService.validateUniqueProductName(productNameController.text, l10n: l10n);
       if (!nameValidation.isValid) {
         _errorHandlingService.handleError(ErrorFactory.validationError(
           nameValidation.errorMessage!, 
@@ -286,11 +287,14 @@ class PriceCalculatorController extends ChangeNotifier {
         originalPrice: double.tryParse(priceController.text) ?? 0.0,
         exchangeRate: _selectedCurrency == 'USD' 
             ? (_exchangeRates?.usdRate ?? 0.0)
-            : (_exchangeRates?.eurRate ?? 0.0),
+            : _selectedCurrency == 'EUR'
+                ? (_exchangeRates?.eurRate ?? 0.0)
+                : 1.0,
         discountRate: _calculationResult!.totalDiscountRate,
         finalPrice: _calculationResult!.finalPriceWithVat,
         createdAt: DateTime.now(),
         notes: notesController.text.isEmpty ? null : notesController.text,
+        currency: _selectedCurrency,
       );
 
       await _recordRepository.saveCalculationRecord(record);

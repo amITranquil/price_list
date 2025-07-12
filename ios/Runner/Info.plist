@@ -52,5 +52,56 @@
 		<dict/>
 		<dict/>
 	</array>
+	
+	<!-- File access permissions -->
+	<key>NSDocumentsFolderUsageDescription</key>
+	<string>Bu uygulama hesap kayıtlarınızı dışa aktarmak ve içe almak için dosyalara erişim gerektirir.</string>
+	<key>NSDownloadsFolderUsageDescription</key>
+	<string>Bu uygulama export edilen dosyaları Downloads klasörüne kaydetmek için erişim gerektirir.</string>
+	
+	<!-- Files app integration -->
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
+	<key>UIFileSharingEnabled</key>
+	<true/>
+	
+	<!-- Document types support -->
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>JSON Document</string>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>LSHandlerRank</key>
+			<string>Owner</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>public.json</string>
+			</array>
+		</dict>
+	</array>
+	
+	<!-- Exported type definitions -->
+	<key>UTExportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.json</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>Price List Export</string>
+			<key>UTTypeIdentifier</key>
+			<string>com.urla-teknik.price-list.export</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>json</string>
+				</array>
+			</dict>
+		</dict>
+	</array>
 </dict>
 </plist>

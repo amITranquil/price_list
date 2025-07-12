@@ -192,7 +192,7 @@ class CleanArchitectureProvider extends ChangeNotifier {
   Future<Result<void>> savePresetUseCase(BuildContext context) async {
     try {
       // Domain validation
-      final labelValidation = _validationService.validatePresetLabel(presetLabelController.text);
+      final labelValidation = _validationService.validatePresetLabel(presetLabelController.text, l10n: AppLocalizations.of(context)!);
       if (!labelValidation.isValid) {
         return Result.error(labelValidation.errorMessage!);
       }
@@ -222,7 +222,7 @@ class CleanArchitectureProvider extends ChangeNotifier {
         return Result.error('No calculation result available');
       }
 
-      final nameValidation = _validationService.validateProductName(productNameController.text);
+      final nameValidation = await _validationService.validateUniqueProductName(productNameController.text, l10n: AppLocalizations.of(context)!);
       if (!nameValidation.isValid) {
         return Result.error(nameValidation.errorMessage!);
       }
@@ -233,11 +233,14 @@ class CleanArchitectureProvider extends ChangeNotifier {
         originalPrice: double.tryParse(priceController.text) ?? 0.0,
         exchangeRate: _selectedCurrency == 'USD' 
             ? (_exchangeRates?.usdRate ?? 0.0)
-            : (_exchangeRates?.eurRate ?? 0.0),
+            : _selectedCurrency == 'EUR'
+                ? (_exchangeRates?.eurRate ?? 0.0)
+                : 1.0,
         discountRate: _calculationResult!.totalDiscountRate,
         finalPrice: _calculationResult!.finalPriceWithVat,
         createdAt: DateTime.now(),
         notes: notesController.text.isEmpty ? null : notesController.text,
+        currency: _selectedCurrency,
       );
 
       await _recordRepository.saveCalculationRecord(record);
@@ -354,7 +357,7 @@ class CleanArchitectureProvider extends ChangeNotifier {
 
     try {
       // Validate inputs
-      final labelValidation = _validationService.validatePresetLabel(presetLabelController.text);
+      final labelValidation = _validationService.validatePresetLabel(presetLabelController.text, l10n: AppLocalizations.of(context)!);
       if (!labelValidation.isValid) {
         if (context.mounted) {
           _showError(context, labelValidation.errorMessage!);
@@ -562,7 +565,7 @@ class CleanArchitectureProvider extends ChangeNotifier {
           keyboardType: TextInputType.number,
           maxLength: 8,
           decoration: InputDecoration(
-            labelText: AppLocalizations.of(context)?.pinCodeLabel ?? 'PIN Kodu',
+            labelText: AppLocalizations.of(context)?.pinCode ?? 'PIN Kodu',
             hintText: AppLocalizations.of(context)?.pinCodeHint ?? '4-8 haneli PIN kodu',
           ),
         ),

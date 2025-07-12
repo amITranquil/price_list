@@ -6,6 +6,7 @@ import '../services/price_calculation_service.dart';
 import '../services/authentication_service.dart';
 import '../services/validation_service.dart';
 import '../services/error_handling_service.dart';
+import '../services/import_export_service.dart';
 import '../repositories/pin_repository.dart';
 import '../repositories/language_repository.dart';
 import '../repositories/discount_preset_repository.dart';
@@ -35,6 +36,10 @@ Future<void> configureDependencies() async {
   getIt.registerLazySingleton<AuthenticationService>(() => PinAuthenticationService(getIt<PinRepository>()));
   getIt.registerLazySingleton<ValidationService>(() => StandardValidationService());
   getIt.registerLazySingleton<ErrorHandlingService>(() => StandardErrorHandlingService());
+  getIt.registerLazySingleton<ImportExportService>(() => ImportExportService(
+    getIt<CalculationRecordRepository>(),
+    getIt<DiscountPresetRepository>(),
+  ));
   
   // Clean Architecture Provider
   getIt.registerLazySingleton<CleanArchitectureProvider>(() => CleanArchitectureProvider());

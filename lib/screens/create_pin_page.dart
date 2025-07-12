@@ -26,7 +26,7 @@ class CreatePinPageState extends State<CreatePinPage> {
     final confirmPin = _confirmPinController.text;
 
     // Validate PIN
-    final pinValidation = _validationService.validatePinCode(pin);
+    final pinValidation = _validationService.validatePinCode(pin, l10n: AppLocalizations.of(context)!);
     if (!pinValidation.isValid) {
       _errorHandlingService.showErrorSnackBar(
         context,
@@ -39,7 +39,7 @@ class CreatePinPageState extends State<CreatePinPage> {
     }
 
     // Validate confirmation PIN
-    final confirmPinValidation = _validationService.validatePinCode(confirmPin);
+    final confirmPinValidation = _validationService.validatePinCode(confirmPin, l10n: AppLocalizations.of(context)!);
     if (!confirmPinValidation.isValid) {
       _errorHandlingService.showErrorSnackBar(
         context,
