@@ -24,14 +24,17 @@ void main() async {
     await windowManager.ensureInitialized();
 
     WindowOptions windowOptions = const WindowOptions(
-      size: Size(800, 600),
+      size: Size(1200, 800),
+      minimumSize: Size(800, 600),
       center: true,
       backgroundColor: Colors.transparent,
       titleBarStyle: TitleBarStyle.normal,
     );
 
     windowManager.waitUntilReadyToShow(windowOptions, () async {
-      await windowManager.maximize();
+      // Set a comfortable size for 1920x1080 screens instead of maximizing
+      await windowManager.setSize(const Size(1400, 900));
+      await windowManager.center();
       await windowManager.show();
       await windowManager.focus();
     });

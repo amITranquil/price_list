@@ -249,7 +249,9 @@ class _CalculationRecordsScreenState extends State<CalculationRecordsScreen> {
         builder: (context, setState) => AlertDialog(
           title: Text(l10n.editPreset),
           content: SizedBox(
-            width: MediaQuery.of(context).size.width * 0.8,
+            width: MediaQuery.of(context).size.width > 1200 
+                ? 600 
+                : MediaQuery.of(context).size.width * 0.8,
             child: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -451,9 +453,11 @@ class _CalculationRecordsScreenState extends State<CalculationRecordsScreen> {
       context: context,
       builder: (context) => Dialog(
         child: Container(
-          width: MediaQuery.of(context).size.width * 0.9,
+          width: MediaQuery.of(context).size.width > 1200 
+              ? 700 
+              : MediaQuery.of(context).size.width * 0.9,
           constraints: BoxConstraints(
-            maxWidth: 600,
+            maxWidth: 800,
             maxHeight: MediaQuery.of(context).size.height * 0.8,
           ),
           padding: const EdgeInsets.all(24),
@@ -974,133 +978,177 @@ class _CalculationRecordsScreenState extends State<CalculationRecordsScreen> {
   Widget _buildDesktopRecordCard(CalculationRecord record, AppLocalizations l10n, 
       DateFormat dateFormat, NumberFormat numberFormat) {
     return Card(
-      elevation: 2,
+      elevation: 3,
       child: Container(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Theme.of(context).dividerColor),
+          border: Border.all(color: Theme.of(context).dividerColor.withValues(alpha: 0.5)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header
+            // Header with product name and actions
             Row(
               children: [
                 Expanded(
-                  child: Text(
-                    record.productName,
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).hintColor,
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        record.productName,
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        dateFormat.format(record.createdAt),
+                        style: TextStyle(
+                          color: Theme.of(context).textTheme.bodySmall?.color,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.visibility_outlined),
+                      icon: const Icon(Icons.visibility_outlined, size: 20),
                       onPressed: () => _showSimpleDetailDialog(record),
                       tooltip: l10n.show,
+                      padding: const EdgeInsets.all(8),
+                      constraints: const BoxConstraints(
+                        minWidth: 32,
+                        minHeight: 32,
+                      ),
                     ),
                     IconButton(
                       icon: Icon(
                         Icons.delete_outline,
                         color: Theme.of(context).colorScheme.error,
+                        size: 20,
                       ),
                       onPressed: () => _showDeleteConfirmation(record),
                       tooltip: l10n.delete,
+                      padding: const EdgeInsets.all(8),
+                      constraints: const BoxConstraints(
+                        minWidth: 32,
+                        minHeight: 32,
+                      ),
                     ),
                   ],
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
             
-            // Price information in grid layout
+            // Price information in responsive grid layout
             Expanded(
-              child: Row(
-                children: [
-                  // Left column
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  // For very wide cards (3-column grid), use a 2x2 grid
+                  if (constraints.maxWidth > 300) {
+                    return Column(
                       children: [
-                        _buildInfoTile(
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _buildCompactInfoTile(
+                                _getCurrencyIcon(record.currency),
+                                l10n.originalPriceDetail,
+                                '${numberFormat.format(record.originalPrice)} ${record.currency}',
+                                Colors.blue,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: _buildCompactInfoTile(
+                                Icons.trending_up,
+                                l10n.usedRateDetail,
+                                numberFormat.format(record.exchangeRate),
+                                Colors.orange,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _buildCompactInfoTile(
+                                Icons.percent,
+                                l10n.cumulativeDiscountDetail,
+                                '%${numberFormat.format(CalculationHelper.getCumulativeDiscountRateFromRecord(record))}',
+                                Colors.green,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: _buildCompactInfoTile(
+                                Icons.price_change,
+                                l10n.calculatedPriceDetail,
+                                '${numberFormat.format(record.finalPrice)} ₺',
+                                Colors.red,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    );
+                  } else {
+                    // For narrower cards, use vertical layout
+                    return Column(
+                      children: [
+                        _buildCompactInfoTile(
                           _getCurrencyIcon(record.currency),
                           l10n.originalPriceDetail,
                           '${numberFormat.format(record.originalPrice)} ${record.currency}',
                           Colors.blue,
                         ),
-                        const SizedBox(height: 12),
-                        _buildInfoTile(
-                          Icons.percent,
-                          l10n.cumulativeDiscountDetail,
-                          '%${numberFormat.format(CalculationHelper.getCumulativeDiscountRateFromRecord(record))}',
-                          Colors.green,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  // Right column
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildInfoTile(
-                          Icons.trending_up,
-                          l10n.usedRateDetail,
-                          numberFormat.format(record.exchangeRate),
-                          Colors.orange,
-                        ),
-                        const SizedBox(height: 12),
-                        _buildInfoTile(
+                        const SizedBox(height: 8),
+                        _buildCompactInfoTile(
                           Icons.price_change,
                           l10n.calculatedPriceDetail,
                           '${numberFormat.format(record.finalPrice)} ₺',
                           Colors.red,
                         ),
                       ],
-                    ),
-                  ),
-                ],
+                    );
+                  }
+                },
               ),
             ),
             
-            const Divider(height: 20),
-            
-            // Footer
-            Row(
-              children: [
-                Icon(Icons.access_time, size: 16, color: Theme.of(context).textTheme.bodyMedium?.color),
-                const SizedBox(width: 8),
-                Text(
-                  dateFormat.format(record.createdAt),
-                  style: TextStyle(
-                    color: Theme.of(context).textTheme.bodyMedium?.color,
-                    fontSize: 13,
-                  ),
-                ),
-                if (record.notes != null && record.notes!.isNotEmpty) ...[
-                  const SizedBox(width: 16),
-                  Icon(Icons.note, size: 16, color: Theme.of(context).textTheme.bodyMedium?.color),
-                  const SizedBox(width: 8),
+            // Footer with notes if present
+            if (record.notes != null && record.notes!.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              const Divider(height: 1),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Icon(Icons.note, size: 14, color: Theme.of(context).textTheme.bodySmall?.color),
+                  const SizedBox(width: 6),
                   Expanded(
                     child: Text(
                       record.notes!,
                       style: TextStyle(
-                        color: Theme.of(context).textTheme.bodyMedium?.color,
-                        fontSize: 13,
+                        color: Theme.of(context).textTheme.bodySmall?.color,
+                        fontSize: 12,
                         fontStyle: FontStyle.italic,
                       ),
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
-              ],
-            ),
+              ),
+            ],
           ],
         ),
       ),
@@ -1202,41 +1250,46 @@ class _CalculationRecordsScreenState extends State<CalculationRecordsScreen> {
     );
   }
 
-  Widget _buildInfoTile(IconData icon, String label, String value, Color color) {
+
+  Widget _buildCompactInfoTile(IconData icon, String label, String value, Color color) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: Color.fromRGBO(color.r.toInt(), color.g.toInt(), color.b.toInt(), 0.1),
+        color: Color.fromRGBO(color.r.toInt(), color.g.toInt(), color.b.toInt(), 0.08),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Color.fromRGBO(color.r.toInt(), color.g.toInt(), color.b.toInt(), 0.3)),
+        border: Border.all(color: Color.fromRGBO(color.r.toInt(), color.g.toInt(), color.b.toInt(), 0.2)),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: color, size: 20),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
+          Row(
+            children: [
+              Icon(icon, color: color, size: 16),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
                   label,
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: 11,
                     color: Theme.of(context).textTheme.bodySmall?.color,
                     fontWeight: FontWeight.w500,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  value,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                    color: Theme.of(context).textTheme.bodyLarge?.color,
-                  ),
-                ),
-              ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 13,
+              color: Theme.of(context).textTheme.bodyLarge?.color,
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
@@ -1341,15 +1394,16 @@ class _CalculationRecordsScreenState extends State<CalculationRecordsScreen> {
                       )
                     : LayoutBuilder(
                         builder: (context, constraints) {
-                          // Desktop için geniş layout (1920x1080 optimize)
-                          if (constraints.maxWidth > 1200) {
+                          // Responsive grid layout for different screen sizes
+                          if (constraints.maxWidth > 1800) {
+                            // Ultra-wide screens (>1800px) - 4 columns
                             return GridView.builder(
-                              padding: const EdgeInsets.all(16),
+                              padding: const EdgeInsets.all(24),
                               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 2,
-                                crossAxisSpacing: 16,
-                                mainAxisSpacing: 16,
-                                childAspectRatio: 2.2, // Kartları daha geniş yap
+                                crossAxisCount: 4,
+                                crossAxisSpacing: 24,
+                                mainAxisSpacing: 24,
+                                childAspectRatio: 1.6, // Optimized for 4-column layout
                               ),
                               itemCount: _filteredRecords.length,
                               itemBuilder: (context, index) {
@@ -1357,8 +1411,53 @@ class _CalculationRecordsScreenState extends State<CalculationRecordsScreen> {
                                 return _buildDesktopRecordCard(record, l10n, dateFormat, numberFormat);
                               },
                             );
+                          } else if (constraints.maxWidth > 1200) {
+                            // Wide screens (Windows maximized 1920x1080) - 3 columns
+                            return GridView.builder(
+                              padding: const EdgeInsets.all(20),
+                              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 3,
+                                crossAxisSpacing: 20,
+                                mainAxisSpacing: 20,
+                                childAspectRatio: 1.8, // Optimized for Windows maximized screens
+                              ),
+                              itemCount: _filteredRecords.length,
+                              itemBuilder: (context, index) {
+                                final record = _filteredRecords[index];
+                                return _buildDesktopRecordCard(record, l10n, dateFormat, numberFormat);
+                              },
+                            );
+                          } else if (constraints.maxWidth > 800) {
+                            // MacBook maximized and medium screens - 2 columns with optimal spacing
+                            return GridView.builder(
+                              padding: const EdgeInsets.all(16),
+                              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                                crossAxisSpacing: 16,
+                                mainAxisSpacing: 16,
+                                childAspectRatio: 1.5, // Optimized for MacBook maximized screens
+                              ),
+                              itemCount: _filteredRecords.length,
+                              itemBuilder: (context, index) {
+                                final record = _filteredRecords[index];
+                                return _buildDesktopRecordCard(record, l10n, dateFormat, numberFormat);
+                              },
+                            );
+                          } else if (constraints.maxWidth > 600) {
+                            // Tablet-sized screens - single column with card layout
+                            return ListView.builder(
+                              padding: const EdgeInsets.all(16),
+                              itemCount: _filteredRecords.length,
+                              itemBuilder: (context, index) {
+                                final record = _filteredRecords[index];
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 16),
+                                  child: _buildDesktopRecordCard(record, l10n, dateFormat, numberFormat),
+                                );
+                              },
+                            );
                           } else {
-                            // Mobil için liste layout
+                            // Mobile screens - compact list layout
                             return ListView.builder(
                               padding: const EdgeInsets.all(16),
                               itemCount: _filteredRecords.length,
