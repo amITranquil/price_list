@@ -32,7 +32,7 @@ class CalculationResultsCard extends StatelessWidget {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(12.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -62,7 +62,7 @@ class CalculationResultsCard extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 10),
             
             // Sonuçlar listesi
             Column(
@@ -74,12 +74,12 @@ class CalculationResultsCard extends StatelessWidget {
                   numberFormat,
                   isHighlighted: false,
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 6),
                 
                 // Kümülatif iskonto oranı (her zaman görünür)
                 if (result!.totalDiscountRate > 0) ...[
                   Container(
-                    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                    padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 10),
                     decoration: BoxDecoration(
                       color: Theme.of(context).colorScheme.errorContainer,
                       borderRadius: BorderRadius.circular(8),
@@ -104,7 +104,7 @@ class CalculationResultsCard extends StatelessWidget {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 6),
                 ],
                 
                 // Detay fiyatları sadece PIN ile görüntülenir
@@ -116,7 +116,7 @@ class CalculationResultsCard extends StatelessWidget {
                     numberFormat,
                     isHighlighted: true,
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 6),
                   _buildResultRow(
                     context,
                     l10n.purchasePriceWithTax,
@@ -124,7 +124,7 @@ class CalculationResultsCard extends StatelessWidget {
                     numberFormat,
                     isHighlighted: false,
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 6),
                   _buildResultRow(
                     context,
                     l10n.salePrice,
@@ -132,7 +132,7 @@ class CalculationResultsCard extends StatelessWidget {
                     numberFormat,
                     isHighlighted: true,
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 6),
                 ],
                 
                 // Final fiyat (Satış + KDV) - her zaman görünür
@@ -149,7 +149,7 @@ class CalculationResultsCard extends StatelessWidget {
             
             // PIN kodu gerektiren fiyatlar için gizlilik kontrolü
             if (pinCode != null) ...[
-              const SizedBox(height: 16),
+              const SizedBox(height: 10),
               const Divider(),
               const SizedBox(height: 8),
               Row(
@@ -191,7 +191,7 @@ class CalculationResultsCard extends StatelessWidget {
     bool isFinal = false,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 10),
       decoration: BoxDecoration(
         color: isFinal 
             ? Theme.of(context).colorScheme.primaryContainer

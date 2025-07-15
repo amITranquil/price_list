@@ -7,6 +7,7 @@ import '../../services/validation_service.dart';
 import '../../services/error_handling_service.dart';
 import '../../repositories/discount_preset_repository.dart';
 import '../../repositories/calculation_record_repository.dart';
+import '../../repositories/pin_repository.dart';
 import '../../models/discount_preset.dart';
 import '../../models/calculation_record.dart';
 import '../../di/injection.dart';
@@ -236,7 +237,10 @@ class CleanArchitectureProvider extends ChangeNotifier {
             : _selectedCurrency == 'EUR'
                 ? (_exchangeRates?.eurRate ?? 0.0)
                 : 1.0,
-        discountRate: _calculationResult!.totalDiscountRate,
+        discount1: double.tryParse(discount1Controller.text) ?? 0.0,
+        discount2: double.tryParse(discount2Controller.text) ?? 0.0,
+        discount3: double.tryParse(discount3Controller.text) ?? 0.0,
+        profitMargin: double.tryParse(profitController.text) ?? 40.0,
         finalPrice: _calculationResult!.finalPriceWithVat,
         createdAt: DateTime.now(),
         notes: notesController.text.isEmpty ? null : notesController.text,
@@ -502,16 +506,13 @@ class CleanArchitectureProvider extends ChangeNotifier {
     logInfo('Clean Architecture Provider initialized successfully');
   }
 
-  // PIN kodu kontrol ve yönetimi (basit in-memory storage)
-  static String? _storedPinCode;
+  // PIN kodu kontrol ve yönetimi
   
   Future<void> _checkPinCode() async {
     try {
-      // Eğer PIN kodu yoksa default olarak '1234' ayarla
-      if (_storedPinCode == null || _storedPinCode!.isEmpty) {
-        _storedPinCode = '1234';
-      }
-      _hasPinCode = _storedPinCode != null && _storedPinCode!.isNotEmpty;
+      // PIN kodu kontrolü - hardcoded değer kaldırıldı
+      final pinRepository = getIt<PinRepository>();
+      _hasPinCode = await pinRepository.hasPinCode();
       notifyListeners();
     } catch (e) {
       Logger.error('Failed to check PIN code');
@@ -520,7 +521,8 @@ class CleanArchitectureProvider extends ChangeNotifier {
 
   Future<void> setPinCode(String pinCode) async {
     try {
-      _storedPinCode = pinCode;
+      final pinRepository = getIt<PinRepository>();
+      await pinRepository.setPinCode(pinCode);
       _hasPinCode = true;
       notifyListeners();
       Logger.info('PIN code set successfully');
@@ -531,7 +533,8 @@ class CleanArchitectureProvider extends ChangeNotifier {
 
   Future<bool> validatePinCode(String inputPin) async {
     try {
-      return _storedPinCode == inputPin;
+      final pinRepository = getIt<PinRepository>();
+      return await pinRepository.verifyPin(inputPin);
     } catch (e) {
       Logger.error('Failed to validate PIN code');
       return false;

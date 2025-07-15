@@ -32,7 +32,7 @@ class PricingInputCard extends StatelessWidget {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(12.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -42,7 +42,7 @@ class PricingInputCard extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 10),
             
             // Orijinal fiyat girişi
             TextField(
@@ -59,7 +59,7 @@ class PricingInputCard extends StatelessWidget {
                 fillColor: Theme.of(context).colorScheme.surface,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 10),
             
             // Para birimi seçimi
             Row(
@@ -95,7 +95,7 @@ class PricingInputCard extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 10),
             
             // Manuel kur girişi
             if (usdRateController != null && eurRateController != null && tlRateController != null) ...[
@@ -105,7 +105,7 @@ class PricingInputCard extends StatelessWidget {
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
               Row(
                 children: [
                   Expanded(
@@ -120,7 +120,7 @@ class PricingInputCard extends StatelessWidget {
                         ),
                         filled: true,
                         fillColor: Theme.of(context).colorScheme.surface,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                       ),
                     ),
                   ),
@@ -137,7 +137,7 @@ class PricingInputCard extends StatelessWidget {
                         ),
                         filled: true,
                         fillColor: Theme.of(context).colorScheme.surface,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                       ),
                     ),
                   ),
@@ -154,13 +154,13 @@ class PricingInputCard extends StatelessWidget {
                         ),
                         filled: true,
                         fillColor: Theme.of(context).colorScheme.surface,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                       ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 10),
             ],
             
             // Preset seçimi
@@ -173,7 +173,7 @@ class PricingInputCard extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 6),
                 DropdownButtonFormField<DiscountPreset?>(
                   value: selectedPreset,
                   onChanged: onPresetChanged,

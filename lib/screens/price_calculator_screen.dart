@@ -90,7 +90,7 @@ class _PriceCalculatorScreenState extends State<PriceCalculatorScreen> {
             ],
           ),
           body: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -100,7 +100,7 @@ class _PriceCalculatorScreenState extends State<PriceCalculatorScreen> {
                   isLoading: provider.isLoading,
                   onRefresh: () => provider.fetchExchangeRates(),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 10),
                 
                 // Pricing Input Card
                 PricingInputCard(
@@ -114,7 +114,7 @@ class _PriceCalculatorScreenState extends State<PriceCalculatorScreen> {
                   eurRateController: provider.eurRateController,
                   tlRateController: provider.tlRateController,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 10),
                 
                 // Discount Configuration Card
                 DiscountConfigCard(
@@ -132,7 +132,7 @@ class _PriceCalculatorScreenState extends State<PriceCalculatorScreen> {
                   showProfitMargin: provider.showProfitMargin,
                   onToggleProfitVisibility: provider.toggleProfitMarginVisibility,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 10),
                 
                 // Calculate Button
                 FilledButton(
@@ -145,7 +145,7 @@ class _PriceCalculatorScreenState extends State<PriceCalculatorScreen> {
                     style: const TextStyle(fontSize: 18),
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 10),
                 
                 // Calculation Results Card
                 CalculationResultsCard(

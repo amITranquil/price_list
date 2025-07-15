@@ -66,7 +66,7 @@ class DiscountConfigCard extends StatelessWidget {
           // Genişletilmiş içerik
           if (isExpanded)
             Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(12.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -87,7 +87,7 @@ class DiscountConfigCard extends StatelessWidget {
                           ),
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 6),
                       Expanded(
                         child: TextField(
                           controller: discount2Controller,
@@ -104,7 +104,7 @@ class DiscountConfigCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 10),
                   
                   Row(
                     children: [
@@ -122,7 +122,7 @@ class DiscountConfigCard extends StatelessWidget {
                           ),
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 6),
                       Expanded(
                         child: TextField(
                           controller: profitController,
@@ -146,7 +146,7 @@ class DiscountConfigCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 10),
                   
                   // Preset yönetimi düğmeleri
                   Row(
@@ -163,7 +163,7 @@ class DiscountConfigCard extends StatelessWidget {
                           ),
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 6),
                       if (selectedPreset != null)
                         Expanded(
                           child: OutlinedButton.icon(
@@ -172,7 +172,7 @@ class DiscountConfigCard extends StatelessWidget {
                             label: Text(l10n.editPreset),
                           ),
                         ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 6),
                       if (selectedPreset != null)
                         Expanded(
                           child: OutlinedButton.icon(

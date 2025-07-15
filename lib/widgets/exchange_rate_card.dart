@@ -22,7 +22,7 @@ class ExchangeRateCard extends StatelessWidget {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(12.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -48,7 +48,7 @@ class ExchangeRateCard extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 10),
             if (isLoading)
               Center(
                 child: Column(
@@ -61,7 +61,7 @@ class ExchangeRateCard extends StatelessWidget {
               )
             else
               _buildCompactRateDisplay(context, exchangeRates, numberFormat),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
             if (exchangeRates != null)
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -72,7 +72,7 @@ class ExchangeRateCard extends StatelessWidget {
                       color: Theme.of(context).colorScheme.outline,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 2),
                   Text(
                     '${l10n.dataSource} ${exchangeRates!.dataSource}',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -89,7 +89,7 @@ class ExchangeRateCard extends StatelessWidget {
 
   Widget _buildCompactRateDisplay(BuildContext context, ExchangeRates? exchangeRates, NumberFormat numberFormat) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(8),
@@ -114,7 +114,7 @@ class ExchangeRateCard extends StatelessWidget {
             fontWeight: FontWeight.w600,
           ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 2),
         Text(
           rate != null ? numberFormat.format(rate) : '--',
           style: Theme.of(context).textTheme.titleMedium?.copyWith(

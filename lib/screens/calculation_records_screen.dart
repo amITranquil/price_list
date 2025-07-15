@@ -7,6 +7,7 @@ import '../repositories/calculation_record_repository.dart';
 import '../di/injection.dart';
 import '../services/exchange_rate_service.dart';
 import '../services/price_calculation_service.dart';
+import '../utils/calculation_helper.dart';
 
 class CalculationRecordsScreen extends StatefulWidget {
   const CalculationRecordsScreen({super.key});
@@ -215,81 +216,228 @@ class _CalculationRecordsScreenState extends State<CalculationRecordsScreen> {
 
   void _showEditDialog(CalculationRecord record) {
     final l10n = AppLocalizations.of(context)!;
+    final TextEditingController productNameController = TextEditingController(
+      text: record.productName
+    );
     final TextEditingController priceController = TextEditingController(
       text: record.originalPrice.toString()
+    );
+    final TextEditingController exchangeRateController = TextEditingController(
+      text: record.exchangeRate.toString()
+    );
+    final TextEditingController discount1Controller = TextEditingController(
+      text: record.discount1.toString()
+    );
+    final TextEditingController discount2Controller = TextEditingController(
+      text: record.discount2.toString()
+    );
+    final TextEditingController discount3Controller = TextEditingController(
+      text: record.discount3.toString()
+    );
+    final TextEditingController profitMarginController = TextEditingController(
+      text: record.profitMargin.toString()
     );
     final TextEditingController notesController = TextEditingController(
       text: record.notes ?? ''
     );
 
+    String selectedCurrency = record.currency;
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.editOriginalPrice),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: priceController,
-              decoration: InputDecoration(
-                labelText: l10n.originalPrice,
-                border: const OutlineInputBorder(),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: Text(l10n.editPreset),
+          content: SizedBox(
+            width: MediaQuery.of(context).size.width * 0.8,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: productNameController,
+                    decoration: InputDecoration(
+                      labelText: l10n.productNameLabel,
+                      border: const OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: priceController,
+                    decoration: InputDecoration(
+                      labelText: l10n.originalPrice,
+                      border: const OutlineInputBorder(),
+                    ),
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Text(l10n.currency),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: DropdownButtonFormField<String>(
+                          value: selectedCurrency,
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                          ),
+                          items: const [
+                            DropdownMenuItem(value: 'USD', child: Text('USD')),
+                            DropdownMenuItem(value: 'EUR', child: Text('EUR')),
+                            DropdownMenuItem(value: 'TRY', child: Text('TRY')),
+                          ],
+                          onChanged: (value) {
+                            if (value != null) {
+                              setState(() {
+                                selectedCurrency = value;
+                              });
+                            }
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: exchangeRateController,
+                    decoration: InputDecoration(
+                      labelText: l10n.usedRateDetail,
+                      border: const OutlineInputBorder(),
+                    ),
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: discount1Controller,
+                          decoration: InputDecoration(
+                            labelText: l10n.discount1,
+                            border: const OutlineInputBorder(),
+                          ),
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: TextField(
+                          controller: discount2Controller,
+                          decoration: InputDecoration(
+                            labelText: l10n.discount2,
+                            border: const OutlineInputBorder(),
+                          ),
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: discount3Controller,
+                          decoration: InputDecoration(
+                            labelText: l10n.discount3,
+                            border: const OutlineInputBorder(),
+                          ),
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: TextField(
+                          controller: profitMarginController,
+                          decoration: InputDecoration(
+                            labelText: l10n.profitMargin,
+                            border: const OutlineInputBorder(),
+                          ),
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: notesController,
+                    decoration: InputDecoration(
+                      labelText: l10n.notesLabel,
+                      border: const OutlineInputBorder(),
+                    ),
+                    maxLines: 3,
+                  ),
+                ],
               ),
-              keyboardType: TextInputType.number,
             ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: notesController,
-              decoration: InputDecoration(
-                labelText: l10n.notesLabel,
-                border: const OutlineInputBorder(),
-              ),
-              maxLines: 3,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(l10n.cancel),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final currentContext = context;
+                try {
+                  final newProductName = productNameController.text.trim();
+                  final newPrice = double.parse(priceController.text);
+                  final newExchangeRate = double.parse(exchangeRateController.text);
+                  final newDiscount1 = double.parse(discount1Controller.text);
+                  final newDiscount2 = double.parse(discount2Controller.text);
+                  final newDiscount3 = double.parse(discount3Controller.text);
+                  final newProfitMargin = double.parse(profitMarginController.text);
+                  
+                  if (newProductName.isEmpty) {
+                    if (mounted) {
+                      ScaffoldMessenger.of(currentContext).showSnackBar(
+                        SnackBar(content: Text(l10n.productNameRequired)),
+                      );
+                    }
+                    return;
+                  }
+                  
+                  // Use CalculationHelper to create updated record with proper calculation
+                  final updatedRecord = CalculationHelper.createRecordFromCalculation(
+                    productName: newProductName,
+                    originalPrice: newPrice,
+                    exchangeRate: newExchangeRate,
+                    currency: selectedCurrency,
+                    discount1: newDiscount1,
+                    discount2: newDiscount2,
+                    discount3: newDiscount3,
+                    profitMargin: newProfitMargin,
+                    notes: notesController.text.isEmpty ? null : notesController.text,
+                  );
+                  
+                  // Keep original ID and creation date
+                  final finalRecord = updatedRecord.copyWith(
+                    id: record.id,
+                    createdAt: record.createdAt,
+                  );
+                  
+                  final repository = getIt<CalculationRecordRepository>();
+                  await repository.updateCalculationRecord(finalRecord);
+                  await _loadRecords();
+                  
+                  if (mounted) {
+                    Navigator.pop(currentContext);
+                    ScaffoldMessenger.of(currentContext).showSnackBar(
+                      SnackBar(content: Text(l10n.priceUpdated)),
+                    );
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(currentContext).showSnackBar(
+                      SnackBar(content: Text(l10n.updateError(e.toString()))),
+                    );
+                  }
+                }
+              },
+              child: Text(l10n.update),
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(l10n.cancel),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              try {
-                final newPrice = double.parse(priceController.text);
-                final updatedRecord = CalculationRecord(
-                  id: record.id,
-                  productName: record.productName,
-                  originalPrice: newPrice,
-                  exchangeRate: record.exchangeRate,
-                  discountRate: record.discountRate,
-                  finalPrice: record.finalPrice,
-                  createdAt: record.createdAt,
-                  notes: notesController.text.isEmpty ? null : notesController.text,
-                  currency: record.currency,
-                );
-                
-                final repository = getIt<CalculationRecordRepository>();
-                await repository.updateCalculationRecord(updatedRecord);
-                await _loadRecords();
-                
-                if (mounted) {
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(l10n.priceUpdated)),
-                  );
-                }
-              } catch (e) {
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(l10n.updateError(e.toString()))),
-                  );
-                }
-              }
-            },
-            child: Text(l10n.update),
-          ),
-        ],
       ),
     );
   }
@@ -345,7 +493,7 @@ class _CalculationRecordsScreenState extends State<CalculationRecordsScreen> {
                       Builder(
                         builder: (context) {
                           final priceCalculationService = getIt<PriceCalculationService>();
-                          final discountRates = record.discountRate > 0 ? [record.discountRate] : <double>[];
+                          final discountRates = record.discounts;
                           
                           final request = PriceCalculationRequest(
                             originalPrice: record.originalPrice,
@@ -394,7 +542,7 @@ class _CalculationRecordsScreenState extends State<CalculationRecordsScreen> {
                             
                             // Tam hesaplama yapalım
                             final priceCalculationService = getIt<PriceCalculationService>();
-                            final discountRates = record.discountRate > 0 ? [record.discountRate] : <double>[];
+                            final discountRates = record.discounts;
                             
                             final request = PriceCalculationRequest(
                               originalPrice: record.originalPrice,
@@ -612,41 +760,167 @@ class _CalculationRecordsScreenState extends State<CalculationRecordsScreen> {
     }
   }
 
+  Future<void> _bulkUpdateWithCurrentRates() async {
+    final l10n = AppLocalizations.of(context)!;
+    
+    if (_records.isEmpty) {
+      _showSnackBar(l10n.noRecordsYet);
+      return;
+    }
+
+    // Onay dialogu göster
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('${l10n.update} - ${l10n.calculationRecordsTitle}'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('${l10n.confirmImport} ${l10n.calculationRecordsTitle}'),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.errorContainer,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.warning,
+                    color: Theme.of(context).colorScheme.onErrorContainer,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      '${l10n.importWillOverwrite} ${l10n.calculationRecordsTitle}',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onErrorContainer,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              '${l10n.calculationRecordsTitle}: ${_records.length}',
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(l10n.cancel),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.error,
+              foregroundColor: Theme.of(context).colorScheme.onError,
+            ),
+            child: Text(l10n.update),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    // Güncel kurları al
+    final currentRates = await _getCurrentRates();
+    if (currentRates == null) {
+      _showSnackBar('Network connection failed');
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final repository = getIt<CalculationRecordRepository>();
+      final now = DateTime.now();
+      
+      List<CalculationRecord> updatedRecords = [];
+      
+      for (final record in _records) {
+        // Güncel kurları al
+        final currentRate = record.currency == 'USD' 
+          ? (currentRates['USD'] ?? record.exchangeRate)
+          : record.currency == 'EUR'
+            ? (currentRates['EUR'] ?? record.exchangeRate)
+            : 1.0;
+        
+        // Use CalculationHelper for consistent calculation
+        final updatedRecord = CalculationHelper.createRecordFromCalculation(
+          productName: record.productName,
+          originalPrice: record.originalPrice,
+          exchangeRate: currentRate,
+          currency: record.currency,
+          discount1: record.discount1,
+          discount2: record.discount2,
+          discount3: record.discount3,
+          profitMargin: record.profitMargin,
+          notes: record.notes,
+        );
+        
+        // Keep original ID and update creation date
+        final finalRecord = updatedRecord.copyWith(
+          id: record.id,
+          createdAt: now,
+        );
+        
+        updatedRecords.add(finalRecord);
+      }
+      
+      // Tüm kayıtları güncelle
+      for (final record in updatedRecords) {
+        await repository.updateCalculationRecord(record);
+      }
+      
+      await _loadRecords();
+      
+      if (mounted) {
+        _showSnackBar('${updatedRecords.length} records updated successfully');
+      }
+    } catch (e) {
+      if (mounted) {
+        _showSnackBar('Update failed: ${e.toString()}');
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
   Future<void> _updateWithCurrentRate(CalculationRecord record, double newRate) async {
     try {
       // PriceCalculationService kullanarak tam hesaplama yapalım
-      final priceCalculationService = getIt<PriceCalculationService>();
+      // Use individual discount rates from record
       
-      // Eski hesaplamadan discount rates'i çıkarmaya çalışalım
-      // record.discountRate toplam indirim, bunu individual rates'e çevirmemiz gerekiyor
-      // Basit yaklaşım: tek bir indirim olarak kabul edelim
-      final discountRates = record.discountRate > 0 ? [record.discountRate] : <double>[];
-      
-      final request = PriceCalculationRequest(
-        originalPrice: record.originalPrice,
-        exchangeRate: newRate,
-        currency: record.currency,
-        discountRates: discountRates,
-        profitMargin: 40.0, // Default kar marjı
-        vatRate: 20.0, // Default KDV
-      );
-      
-      final result = priceCalculationService.calculatePrice(request);
-      
-      final updatedRecord = CalculationRecord(
-        id: record.id,
+      // Use CalculationHelper for consistent calculation
+      final updatedRecord = CalculationHelper.createRecordFromCalculation(
         productName: record.productName,
         originalPrice: record.originalPrice,
         exchangeRate: newRate,
-        discountRate: record.discountRate, // Aynı indirim oranını koru
-        finalPrice: result.finalPriceWithVat, // Tam hesaplanmış final fiyat
-        createdAt: DateTime.now(), // Güncelleme tarihi
-        notes: record.notes,
         currency: record.currency,
+        discount1: record.discount1,
+        discount2: record.discount2,
+        discount3: record.discount3,
+        profitMargin: record.profitMargin,
+        notes: record.notes,
+      );
+      
+      // Keep original ID 
+      final finalRecord = updatedRecord.copyWith(
+        id: record.id,
       );
       
       final repository = getIt<CalculationRecordRepository>();
-      await repository.updateCalculationRecord(updatedRecord);
+      await repository.updateCalculationRecord(finalRecord);
       await _loadRecords();
       
       if (mounted) {
@@ -763,7 +1037,7 @@ class _CalculationRecordsScreenState extends State<CalculationRecordsScreen> {
                         _buildInfoTile(
                           Icons.percent,
                           l10n.cumulativeDiscountDetail,
-                          '%${numberFormat.format(record.discountRate)}',
+                          '%${numberFormat.format(CalculationHelper.getCumulativeDiscountRateFromRecord(record))}',
                           Colors.green,
                         ),
                       ],
@@ -890,7 +1164,7 @@ class _CalculationRecordsScreenState extends State<CalculationRecordsScreen> {
               children: [
                 Icon(Icons.percent, size: 18, color: Theme.of(context).colorScheme.secondary),
                 const SizedBox(width: 8),
-                Text('${l10n.cumulativeDiscountDetail}: %${numberFormat.format(record.discountRate)}'),
+                Text('${l10n.cumulativeDiscountDetail}: %${numberFormat.format(CalculationHelper.getCumulativeDiscountRateFromRecord(record))}'),
               ],
             ),
             const SizedBox(height: 8),
@@ -980,6 +1254,13 @@ class _CalculationRecordsScreenState extends State<CalculationRecordsScreen> {
         title: Text(l10n.calculationRecordsTitle),
         elevation: 0,
         actions: [
+          if (_records.isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.refresh),
+              onPressed: _bulkUpdateWithCurrentRates,
+              tooltip: '${l10n.update} - ${l10n.refreshRates}',
+            ),
+          
           if (_isExporting)
             const Padding(
               padding: EdgeInsets.all(16.0),

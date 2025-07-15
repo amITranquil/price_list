@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '/utils/database_helper.dart';
 import 'price_calculator_screen.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../services/validation_service.dart';
 import '../services/error_handling_service.dart';
+import '../repositories/pin_repository.dart';
 import '../di/injection.dart';
 
 class CreatePinPage extends StatefulWidget {
@@ -20,6 +20,7 @@ class CreatePinPageState extends State<CreatePinPage> {
   final TextEditingController _confirmPinController = TextEditingController();
   final ValidationService _validationService = getIt<ValidationService>();
   final ErrorHandlingService _errorHandlingService = getIt<ErrorHandlingService>();
+  final PinRepository _pinRepository = getIt<PinRepository>();
 
   void _createPin() async {
     final pin = _pinController.text;
@@ -53,7 +54,7 @@ class CreatePinPageState extends State<CreatePinPage> {
 
     if (pin == confirmPin) {
       try {
-        await DatabaseHelper().setPinCode(pin);
+        await _pinRepository.setPinCode(pin);
         if (!mounted) return;
 
         Navigator.pushReplacement(

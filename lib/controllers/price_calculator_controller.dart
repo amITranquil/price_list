@@ -290,7 +290,10 @@ class PriceCalculatorController extends ChangeNotifier {
             : _selectedCurrency == 'EUR'
                 ? (_exchangeRates?.eurRate ?? 0.0)
                 : 1.0,
-        discountRate: _calculationResult!.totalDiscountRate,
+        discount1: double.tryParse(discount1Controller.text) ?? 0.0,
+        discount2: double.tryParse(discount2Controller.text) ?? 0.0,
+        discount3: double.tryParse(discount3Controller.text) ?? 0.0,
+        profitMargin: double.tryParse(profitController.text) ?? 40.0,
         finalPrice: _calculationResult!.finalPriceWithVat,
         createdAt: DateTime.now(),
         notes: notesController.text.isEmpty ? null : notesController.text,
