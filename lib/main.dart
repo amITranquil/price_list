@@ -32,9 +32,8 @@ void main() async {
     );
 
     windowManager.waitUntilReadyToShow(windowOptions, () async {
-      // Set a comfortable size for 1920x1080 screens instead of maximizing
-      await windowManager.setSize(const Size(1400, 900));
-      await windowManager.center();
+      // Maximize window to fullscreen on both macOS and Windows
+      await windowManager.maximize();
       await windowManager.show();
       await windowManager.focus();
     });
