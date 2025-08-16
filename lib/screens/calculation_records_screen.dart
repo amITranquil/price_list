@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:price_list/utils/text_input_helpers.dart';
 import '../models/calculation_record.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -271,6 +272,8 @@ class _CalculationRecordsScreenState extends State<CalculationRecordsScreen> {
                       border: const OutlineInputBorder(),
                     ),
                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    onChanged: (value) => TextInputHelpers.handleCommaToDecimal(
+                        value, priceController),
                   ),
                   const SizedBox(height: 16),
                   Row(
@@ -307,6 +310,8 @@ class _CalculationRecordsScreenState extends State<CalculationRecordsScreen> {
                       border: const OutlineInputBorder(),
                     ),
                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    onChanged: (value) => TextInputHelpers.handleCommaToDecimal(
+                        value, exchangeRateController),
                   ),
                   const SizedBox(height: 16),
                   Row(
@@ -319,6 +324,9 @@ class _CalculationRecordsScreenState extends State<CalculationRecordsScreen> {
                             border: const OutlineInputBorder(),
                           ),
                           keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          onChanged: (value) =>
+                              TextInputHelpers.handleCommaToDecimal(
+                                  value, discount1Controller),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -330,6 +338,9 @@ class _CalculationRecordsScreenState extends State<CalculationRecordsScreen> {
                             border: const OutlineInputBorder(),
                           ),
                           keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          onChanged: (value) =>
+                              TextInputHelpers.handleCommaToDecimal(
+                                  value, discount2Controller),
                         ),
                       ),
                     ],
@@ -345,6 +356,9 @@ class _CalculationRecordsScreenState extends State<CalculationRecordsScreen> {
                             border: const OutlineInputBorder(),
                           ),
                           keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          onChanged: (value) =>
+                              TextInputHelpers.handleCommaToDecimal(
+                                  value, discount3Controller),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -356,6 +370,9 @@ class _CalculationRecordsScreenState extends State<CalculationRecordsScreen> {
                             border: const OutlineInputBorder(),
                           ),
                           keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          onChanged: (value) =>
+                              TextInputHelpers.handleCommaToDecimal(
+                                  value, profitMarginController),
                         ),
                       ),
                     ],
