@@ -567,6 +567,22 @@ class CleanArchitectureProvider extends ChangeNotifier {
           obscureText: true,
           keyboardType: TextInputType.number,
           maxLength: 8,
+          autofocus: true,
+          onSubmitted: (value) async {
+            final isValid = await validatePinCode(value);
+            if (context.mounted) {
+              if (isValid) {
+                Navigator.pop(context, true);
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(AppLocalizations.of(context)?.invalidPinCode ?? 'Hatalı PIN kodu'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            }
+          },
           decoration: InputDecoration(
             labelText: AppLocalizations.of(context)?.pinCode ?? 'PIN Kodu',
             hintText: AppLocalizations.of(context)?.pinCodeHint ?? '4-8 haneli PIN kodu',

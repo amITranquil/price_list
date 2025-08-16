@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:price_list/utils/text_input_helpers.dart';
 import '../models/discount_preset.dart';
 
 class DiscountConfigCard extends StatelessWidget {
@@ -77,6 +78,7 @@ class DiscountConfigCard extends StatelessWidget {
                         child: TextField(
                           controller: discount1Controller,
                           keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                            onChanged: (value) => TextInputHelpers.handleCommaToDecimal(value, discount1Controller),
                           decoration: InputDecoration(
                             labelText: l10n.discount1,
                             border: OutlineInputBorder(
@@ -92,6 +94,9 @@ class DiscountConfigCard extends StatelessWidget {
                         child: TextField(
                           controller: discount2Controller,
                           keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                            onChanged: (value) =>
+                              TextInputHelpers.handleCommaToDecimal(
+                                  value, discount2Controller),
                           decoration: InputDecoration(
                             labelText: l10n.discount2,
                             border: OutlineInputBorder(
@@ -112,6 +117,9 @@ class DiscountConfigCard extends StatelessWidget {
                         child: TextField(
                           controller: discount3Controller,
                           keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                            onChanged: (value) =>
+                              TextInputHelpers.handleCommaToDecimal(
+                                  value, discount3Controller),
                           decoration: InputDecoration(
                             labelText: l10n.discount3,
                             border: OutlineInputBorder(
@@ -127,6 +135,9 @@ class DiscountConfigCard extends StatelessWidget {
                         child: TextField(
                           controller: profitController,
                           keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                            onChanged: (value) =>
+                              TextInputHelpers.handleCommaToDecimal(
+                                  value, profitController),
                           obscureText: !showProfitMargin,
                           decoration: InputDecoration(
                             labelText: l10n.profitMargin,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../models/discount_preset.dart';
+import '../utils/text_input_helpers.dart';
 
 class PricingInputCard extends StatelessWidget {
   final TextEditingController priceController;
@@ -48,6 +49,7 @@ class PricingInputCard extends StatelessWidget {
             TextField(
               controller: priceController,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              onChanged: (value) => TextInputHelpers.handleCommaToDecimal(value, priceController),
               decoration: InputDecoration(
                 labelText: l10n.originalPrice,
                 hintText: l10n.enterPriceHelp,
@@ -112,6 +114,9 @@ class PricingInputCard extends StatelessWidget {
                     child: TextField(
                       controller: usdRateController,
                       keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        onChanged: (value) =>
+                          TextInputHelpers.handleCommaToDecimal(
+                              value, usdRateController!),
                       decoration: InputDecoration(
                         labelText: l10n.usdRateManual,
                         hintText: '0.00',
@@ -129,6 +134,9 @@ class PricingInputCard extends StatelessWidget {
                     child: TextField(
                       controller: eurRateController,
                       keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        onChanged: (value) =>
+                          TextInputHelpers.handleCommaToDecimal(
+                              value, eurRateController!),
                       decoration: InputDecoration(
                         labelText: l10n.eurRateManual,
                         hintText: '0.00',
@@ -146,6 +154,9 @@ class PricingInputCard extends StatelessWidget {
                     child: TextField(
                       controller: tlRateController,
                       keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        onChanged: (value) =>
+                          TextInputHelpers.handleCommaToDecimal(
+                              value, tlRateController!),
                       decoration: InputDecoration(
                         labelText: l10n.tryRateManual,
                         hintText: '1.00',

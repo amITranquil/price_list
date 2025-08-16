@@ -25,6 +25,8 @@ class PriceCalculationResult {
   final double finalPriceWithVat;
   final double totalDiscountRate;
   final List<CalculationStep> steps;
+  final double exchangeRate;
+  final String currency;
 
   PriceCalculationResult({
     required this.convertedPrice,
@@ -35,6 +37,8 @@ class PriceCalculationResult {
     required this.finalPriceWithVat,
     required this.totalDiscountRate,
     required this.steps,
+    required this.exchangeRate,
+    required this.currency,
   });
 }
 
@@ -117,6 +121,8 @@ class StandardPriceCalculationService implements PriceCalculationService {
       finalPriceWithVat: finalPriceWithVat,
       totalDiscountRate: totalDiscountRate,
       steps: steps,
+      exchangeRate: request.exchangeRate,
+      currency: request.currency,
     );
   }
 

@@ -67,11 +67,13 @@ class CalculationResultsCard extends StatelessWidget {
             // Sonuçlar listesi
             Column(
               children: [
-                _buildResultRow(
+                _buildResultRowWithRate(
                   context,
                   l10n.convertedPrice,
                   result!.convertedPrice,
                   numberFormat,
+                  result!.currency,
+                  result!.exchangeRate,
                   isHighlighted: false,
                 ),
                 const SizedBox(height: 6),
@@ -125,15 +127,17 @@ class CalculationResultsCard extends StatelessWidget {
                     isHighlighted: false,
                   ),
                   const SizedBox(height: 6),
-                  _buildResultRow(
-                    context,
-                    l10n.salePrice,
-                    result!.salePriceWithProfit,
-                    numberFormat,
-                    isHighlighted: true,
-                  ),
-                  const SizedBox(height: 6),
                 ],
+                
+                // Satış fiyatı her zaman görünür
+                _buildResultRow(
+                  context,
+                  l10n.salePrice,
+                  result!.salePriceWithProfit,
+                  numberFormat,
+                  isHighlighted: true,
+                ),
+                const SizedBox(height: 6),
                 
                 // Final fiyat (Satış + KDV) - her zaman görünür
                 _buildResultRow(
@@ -182,6 +186,69 @@ class CalculationResultsCard extends StatelessWidget {
     );
   }
 
+  Widget _buildResultRowWithRate(
+    BuildContext context,
+    String label,
+    double value,
+    NumberFormat numberFormat,
+    String currency,
+    double exchangeRate, {
+    bool isHighlighted = false,
+    bool isFinal = false,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 10),
+      decoration: BoxDecoration(
+        color: isFinal 
+            ? Theme.of(context).colorScheme.primaryContainer
+            : isHighlighted 
+                ? Theme.of(context).colorScheme.surfaceContainerHighest
+                : Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                label,
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  fontWeight: isFinal ? FontWeight.bold : FontWeight.w500,
+                  color: isFinal 
+                      ? Theme.of(context).colorScheme.onPrimaryContainer
+                      : null,
+                ),
+              ),
+              SelectableText(
+                '${numberFormat.format(value)} ₺',
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: isFinal 
+                      ? Theme.of(context).colorScheme.onPrimaryContainer
+                      : Theme.of(context).colorScheme.primary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              SelectableText(
+                '(1 $currency = ${exchangeRate.toStringAsFixed(2)} ₺)',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.outline,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildResultRow(
     BuildContext context,
     String label,
@@ -212,7 +279,7 @@ class CalculationResultsCard extends StatelessWidget {
                   : null,
             ),
           ),
-          Text(
+          SelectableText(
             '${numberFormat.format(value)} ₺',
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
               fontWeight: FontWeight.bold,
