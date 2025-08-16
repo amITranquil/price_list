@@ -25,7 +25,11 @@ class HiveCalculationRecordRepository implements CalculationRecordRepository {
       'productName': record.productName,
       'originalPrice': record.originalPrice,
       'exchangeRate': record.exchangeRate,
-      'discountRate': record.discountRate,
+      'discountRate': record.discountRate, // backward compatibility
+      'discount1': record.discount1,
+      'discount2': record.discount2,
+      'discount3': record.discount3,
+      'profitMargin': record.profitMargin,
       'finalPrice': record.finalPrice,
       'createdAt': record.createdAt.toIso8601String(),
       'notes': record.notes,

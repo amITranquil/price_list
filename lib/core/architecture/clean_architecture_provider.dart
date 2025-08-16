@@ -231,6 +231,7 @@ class CleanArchitectureProvider extends ChangeNotifier {
         return Result.error(nameValidation.errorMessage!);
       }
 
+
       final record = CalculationRecord(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         productName: productNameController.text,
