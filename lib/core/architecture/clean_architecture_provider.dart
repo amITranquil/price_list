@@ -108,13 +108,16 @@ class CleanArchitectureProvider extends ChangeNotifier {
         final originalPrice = priceController.text.toDoubleOrDefault();
         double? exchangeRate;
         
-        // Get exchange rate based on selected currency
+        // Get exchange rate based on selected currency (prefer manual input)
         if (_selectedCurrency == 'USD') {
-          exchangeRate = _exchangeRates!.usdRate;
+          final manualRate = double.tryParse(usdRateController.text);
+          exchangeRate = manualRate != null && manualRate > 0 ? manualRate : _exchangeRates!.usdRate;
         } else if (_selectedCurrency == 'EUR') {
-          exchangeRate = _exchangeRates!.eurRate;
+          final manualRate = double.tryParse(eurRateController.text);
+          exchangeRate = manualRate != null && manualRate > 0 ? manualRate : _exchangeRates!.eurRate;
         } else if (_selectedCurrency == 'TRY') {
-          exchangeRate = 1.0; // TL base currency
+          final manualRate = double.tryParse(tlRateController.text);
+          exchangeRate = manualRate != null && manualRate > 0 ? manualRate : 1.0; // TL base currency
         }
         
         if (exchangeRate == null) {
@@ -233,10 +236,10 @@ class CleanArchitectureProvider extends ChangeNotifier {
         productName: productNameController.text,
         originalPrice: double.tryParse(priceController.text) ?? 0.0,
         exchangeRate: _selectedCurrency == 'USD' 
-            ? (_exchangeRates?.usdRate ?? 0.0)
+            ? (double.tryParse(usdRateController.text) ?? _exchangeRates?.usdRate ?? 0.0)
             : _selectedCurrency == 'EUR'
-                ? (_exchangeRates?.eurRate ?? 0.0)
-                : 1.0,
+                ? (double.tryParse(eurRateController.text) ?? _exchangeRates?.eurRate ?? 0.0)
+                : (double.tryParse(tlRateController.text) ?? 1.0),
         discount1: double.tryParse(discount1Controller.text) ?? 0.0,
         discount2: double.tryParse(discount2Controller.text) ?? 0.0,
         discount3: double.tryParse(discount3Controller.text) ?? 0.0,
