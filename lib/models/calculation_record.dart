@@ -95,8 +95,11 @@ class CalculationRecord {
   // Backward compatibility getter
   double get discountRate => discount1;
 
-  // Helper method to get all discounts as a list
-  List<double> get discounts => [discount1, discount2, discount3].where((d) => d > 0).toList();
+  // Helper method to get all discounts as a list (for cumulative calculation)
+  List<double> get discounts => [discount1, discount2, discount3];
+  
+  // Helper method to get only non-zero discounts for display
+  List<double> get nonZeroDiscounts => [discount1, discount2, discount3].where((d) => d > 0).toList();
 
   @override
   String toString() {
